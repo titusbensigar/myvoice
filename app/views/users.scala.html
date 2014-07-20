@@ -1,0 +1,180 @@
+@(connecteduser : User)
+@header("MyVoice",connecteduser)
+
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                		<h1 class="page-header">Manage Users <a href="/adduser" id="dashboardDone" name="dashboardDone" class="btn btn-lg btn-primary btn-outline pull-right"><i class="fa fa-user fa-fw"></i> Add User</a></h1>
+               			@if(flash.get("success")) {
+		                    <div class="alert alert-success alert-dismissable">
+			            	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+			            		@flash.get("success")
+			            	</div>
+	            		} else {
+	            			@if(flash.get("error")) {
+		            			<div class="alert alert-danger alert-dismissable">
+				            	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				            		@flash.get("error")
+				            	</div>
+			            	}
+	            		}
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+				<div class="col-lg-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <i class="fa fa-users fa-fw"></i> Users Panel
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+							<div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover" id="userTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>First Name</th>
+                                            <th>Last Name</th>
+                                           	<th>Email</th>
+                                           	<th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.table-responsive -->
+							
+						</div>
+					</div>
+				</div>
+				 
+            <!-- /.row -->
+        </div>
+        
+        
+        <!-- /#page-wrapper -->
+
+    </div>
+    <script type="text/javascript">
+   
+    loadTable();
+    
+    var oTable;
+    function loadTable() {
+    	oTable = $('#userTable').dataTable({
+        		"bProcessing": true,
+                "bServerSide": false,
+                "sAjaxSource": "/users.json",
+                "sDom": "<'row-fluid'<'col-lg-4'l><'col-lg-5'f><'col-lg-3'T>r>t<'row-fluid'<'col-lg-6'i><'col-lg-6'p>>",
+                "oTableTools": {
+                	"sSwfPath": "/assets/swf/copy_csv_xls_pdf.swf",
+                	"aButtons": [
+                	                {
+                	                    "sExtends":    "collection",
+                	                    "sButtonText": "<i class='fa fa-download'></i> Download",
+                	                    "aButtons":    [ "xls", "pdf" ]
+                	                }
+                	            ]
+        		},
+                "aoColumns": [
+                     { "mData": "id" },
+                     { "mData": "firstName" },
+                     { "mData": "lastName" },
+                     { "mData": "email" },
+                     { "mData": null }
+                 ],
+                 "aoColumnDefs": [     
+             			{ "mRender": function(oObj) {
+             					return '<a title="Assign Topic" href="/assignuser/' + oObj.id +'" ><i class="fa fa-file-text fa-fw"></i></a>&nbsp;|&nbsp;<a title="Edit User" href="/edituser/' + oObj.id +'" ><i class="fa fa-pencil-square-o fa-fw"></i></a>&nbsp;|&nbsp;<a title="Remove User" href="javascript:deleteuser(' + oObj.id +');" ><i class="fa fa-trash-o fa-fw"></i></a>';
+             				},
+             				"bSortable": false,
+             				"aTargets": [4]
+             			}
+             		],
+             		"oLanguage": {
+            			"sLengthMenu": "Show _MENU_ Users",
+            			"sEmptyTable": "No Users Found.",
+            			"sInfoEmpty": "",
+            			"sProcessing": "Loading...",
+            			"sClass": "dataTableContent"
+            		},
+    	});
+    }
+    
+    function deleteuser(id, flag) {
+    	var f = true;
+    	if (flag) {
+    		f = flag;
+    	}
+    	var url = '/deleteuser/' + id + '/' + f;
+        $.ajax({
+    		type: "GET",
+    		url: url,
+    		dataType: "json"
+    	}).done(function(data) {
+    		if(data.status == 'success') {
+	    		//show message
+	    		bootbox.dialog({
+				  message: data.msg,
+				  title: "<i style=\"color:#60B08C;margin-top:5px;\" class=\"fa fa-check-circle fa-2x\"></i> Success",
+				  buttons: {
+				    main: {
+				      label: "OK",
+				      className: "btn-primary",
+				      callback: function() {
+				    	  window.location="/users"
+				      }
+				    }
+				  }
+				});
+    		} else if(data.status == 'failed') {
+    			bootbox.dialog({
+  				  message: data.msg,
+  				  title: "<i style=\"color:#b94a48;margin-top:5px;\" class=\"fa fa-times-circle fa-2x\"></i> Error",
+  				  buttons: {
+  					cancel: {
+    				      label: "Cancel",
+    				      className: "btn-default",
+    				      callback: function() {
+    				    	  window.location="/users"
+    				      }
+    				    },
+  				    main: {
+  				      label: "OK",
+  				      className: "btn-primary",
+  				      callback: function() {
+  				    	deleteuser(id, false);
+  				      }
+  				    }
+  				  }
+  				});
+    		} else {
+    			bootbox.dialog({
+  				  message: data.msg,
+  				  title: "<i style=\"color:#b94a48;margin-top:5px;\" class=\"fa fa-times-circle fa-2x\"></i> Error",
+  				  buttons: {
+  				    main: {
+  				      label: "OK",
+  				      className: "btn-primary",
+  				      callback: function() {
+  				    	  window.location="/users"
+  				      }
+  				    }
+  				  }
+  				});
+    		}
+    	}).error(function(xhr, status) {
+
+    	});
+    }
+    
+     </script>
+    
+ 
+@footer()
+

@@ -1,0 +1,49 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.index()
+GET     /logout                           controllers.Application.logout()
+POST     /authenticate               controllers.Application.authenticate()
+GET		/report						controllers.Application.report()
+GET		/dashboard/:id						controllers.Application.dashboard(id: Long)
+GET		/users						controllers.Application.users()
+GET		/users.json						controllers.Application.users_DT_DP()
+GET		/adduser						controllers.Application.adduser()
+POST	/saveuser					controllers.Application.saveuser()
+GET	/deleteuser/:id/:checkrelation						controllers.Application.deleteuser(id: Long, checkrelation: Boolean)
+GET		/edituser/:id					controllers.Application.edituser(id: Long)
+POST	/updateuser					controllers.Application.updateuser
+
+GET		/editprofile/:id					controllers.Application.editprofile(id: Long)
+POST	/updateprofile					controllers.Application.updateprofile
+
+
+GET		/assignuser/:id					controllers.Application.assignuser(id: Long)
+GET		/removetopic/:id					controllers.Application.removetopic(id: Long)
+POST	/saveusertopic					controllers.Application.saveusertopic
+
+GET		/topics						controllers.Application.topics()
+GET		/topics.json				controllers.Application.topics_DT_DP()
+GET		/addtopic						controllers.Application.addtopic()
+POST	/savetopic					controllers.Application.savetopic()
+GET		/deletetopic/:id/:checkrelation						controllers.Application.deletetopic(id: Long, checkrelation: Boolean)
+GET		/edittopic/:id					controllers.Application.edittopic(id: Long)
+POST	/updatetopic					controllers.Application.updatetopic
+
+POST	/mapusertopic/user/:userId/topic/:topicId	controllers.Application.mapusertopic(userId : Long, topicId : Long)
+
+GET		/usertopics.json/:userId			controllers.Application.usertopics_DT_DP(userId : Long)
+
+GET		/userreports					controllers.Application.userreports()
+GET		/userreports.json					controllers.Application.userreports_DT_DP()
+
+GET		/deleteusertopic/:id  			controllers.Application.deleteusertopic(id: Long)
+
+GET		/help							controllers.Application.help()
+
+GET		/pdfreport							controllers.Application.pdfreport()
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

@@ -1,0 +1,273 @@
+@(title: String, connecteduser : User)
+
+<html>
+
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>@title</title>
+
+    <!-- Core CSS - Include with every page -->
+    <link  href="@routes.Assets.at("stylesheets/bootstrap.min.css")" rel="stylesheet">
+    <link  href="@routes.Assets.at("stylesheets/font-awesome/css/font-awesome.css")" rel="stylesheet">
+
+	<!-- Core CSS - Include with every page -->
+    <link href="@routes.Assets.at("stylesheets/plugins/morris/morris-0.4.3.min.css")" rel="stylesheet">
+    <link  href="@routes.Assets.at("stylesheets/plugins/timeline/timeline.css")" rel="stylesheet">
+
+<!-- Page-Level Plugin CSS - Tables -->
+    <link href="@routes.Assets.at("stylesheets/plugins/dataTables/dataTables.bootstrap.css")" rel="stylesheet">
+
+	<link href="@routes.Assets.at("stylesheets/plugins/dataTables/dataTables.tableTools.css")" rel="stylesheet">
+	
+    <!-- SB Admin CSS - Include with every page -->
+    <link  href="@routes.Assets.at("stylesheets/sb-admin.css")" rel="stylesheet">
+    
+    <link  href="@routes.Assets.at("stylesheets/TimeCircles.css")" rel="stylesheet">
+    
+        <!-- Core Scripts - Include with every page -->
+    <script src="@routes.Assets.at("javascripts/jquery-1.10.2.js")"  type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/bootstrap.min.js")"  type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/plugins/metisMenu/jquery.metisMenu.js")"  type="text/javascript"></script>
+
+    <!-- SB Admin Scripts - Include with every page -->
+    <script src="@routes.Assets.at("javascripts/sb-admin.js")"  type="text/javascript"></script>
+    
+    <script src="@routes.Assets.at("javascripts/bootbox.js")"  type="text/javascript"></script>
+    
+   
+ 		<script src="@routes.Assets.at("javascripts/jquery.timer.js")" type="text/javascript"></script>
+ 		    <!-- Page-Level Plugin Scripts - Tables -->
+    <script src="@routes.Assets.at("javascripts/plugins/dataTables/jquery.dataTables.js")"></script>
+    <script src="@routes.Assets.at("javascripts/plugins/dataTables/dataTables.bootstrap.js")"></script>
+    <script src="@routes.Assets.at("javascripts/plugins/dataTables/dataTables.tableTools.js")"></script>
+    <script src="@routes.Assets.at("javascripts/plugins/slimscroll/jquery.slimscroll.min.js")"></script>
+ 		
+ 		
+ 		<script src="@routes.Assets.at("javascripts/plugins/PrettyTextDiff/diff_match_patch.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/plugins/PrettyTextDiff/jquery.pretty-text-diff.min.js")" type="text/javascript"></script>
+		
+
+
+<style type="text/css">
+         body {
+	    /* the following accounts for the page banner */
+	    padding-top: 0px;
+    	padding-bottom: 10px;
+    	/* end of page banner padding adjustment */
+	}
+        /*  --------------------------------------------------
+            main container
+            -------------------------------------------------- */
+        	.main_container {
+        		margin-top:150px;
+        		margin-bottom:20px;
+        	}
+        	.login_container {
+        		margin-top:20px;
+        		
+        	}
+        	html, body {
+        	  height: 88%;
+        	}
+        	
+        	#wrap {
+        	  min-height: 80%;
+        	}
+        	
+        	#main {
+        	  overflow:auto;
+        	  padding-bottom:25px; /* this needs to be bigger than footer height*/
+        	}
+        	
+			.scrollable {
+                height: 250px;
+                width: 98%;
+                overflow: auto;
+            }
+        	
+        		
+        		/*	--------------------------------------------------
+	Topbar Header
+	-------------------------------------------------- */
+	/* add a little room for the command bar */
+	.navbar-fixed-top .navbar-inner .container { min-height:10px; }
+	/* light gray shadow */
+	.navbar-fixed-top .navbar-inner { box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25) inset, 0 1px 6px rgba(0, 0, 0, 0.25); }
+	
+	/* .navbar .brand { padding-top:14px; color: #000; } */
+	.navbar .brand { padding:0px 10px 0px 20px; color: #000; margin-top:3px;}
+	#userMenu { margin-top:8px; margin-right:0; }
+	#userMenu .btn { padding-left:8px; padding-right:8px; }
+	.navbar .divider-vertical { 
+		height:46px; 
+		background-color: #888;
+  		border-right: 1px solid #ccc;
+  	}
+	.navbar .nav > li > a { padding-top:15px; padding-bottom:11px; }
+	.navbar .logo {font-size: 16px; color:#e41b24; font-weight: bold; padding-top: 15px; padding-left: 6px; }
+	
+	
+	ins {
+	    background-color: #F66262;
+	    text-decoration: none;
+	}
+	
+	del {
+	    background-color: #5EEA5E;
+	}
+
+	/*  --------------------------------------------------
+        	    Footer
+        	    -------------------------------------------------- */  
+        	    
+        	    .footer{
+        			 height:25px;
+        			 text-decoration: none;
+        		 	position: relative;
+        			clear:both;
+        			padding-top:0px;
+        			border-bottom: none;
+        		}
+        		.footer a, a:focus {
+        			 text-decoration: none;
+        		}
+        		
+        		.footer ul { margin-top:2px; display: block; margin-left: 0px; margin-bottom: 0px; list-style: none; padding: 2px 0px; overflow: hidden; }
+        		.footer ul li { margin: 0; padding: 0 2px 0 0; float: left; }
+        		
+        		.fa-ellipsis-v {
+        			padding-right:15px;
+        			padding-left:15px;
+        		}
+        		.navbar-brand {
+        			font-size:28px;
+        			line-height:30px;
+        		}
+        		
+        		.modal-footer {
+        			padding: 5px 20px 5px;
+        		}
+        		
+       
+         </style>
+        <script type="text/javascript">
+        
+        $(document).ready(function() {
+			 setInterval('updateClock()', 1000);
+
+			 $("readTopicPanel").slimScroll({
+		          height: '290px',
+		          width:  '468px'
+		    });
+		});
+	
+        function updateClock ( )
+        {
+       	var currentTime = new Date ( );
+       	var currentHours = currentTime.getHours ( );
+       	var currentMinutes = currentTime.getMinutes ( );
+       	var currentSeconds = currentTime.getSeconds ( );
+
+       	// Pad the minutes and seconds with leading zeros, if required
+       	currentMinutes = ( currentMinutes < 10 ? "0" : "" ) + currentMinutes;
+       	currentSeconds = ( currentSeconds < 10 ? "0" : "" ) + currentSeconds;
+
+       	// Choose either "AM" or "PM" as appropriate
+       	var timeOfDay = ( currentHours < 12 ) ? "AM" : "PM";
+
+       	// Convert the hours component to 12-hour format if needed
+       	currentHours = ( currentHours > 12 ) ? currentHours - 12 : currentHours;
+
+       	// Convert an hours component of "0" to "12"
+       	currentHours = ( currentHours == 0 ) ? 12 : currentHours;
+
+       	// Compose the string for display
+       	var currentTimeString = currentHours + ":" + currentMinutes + ":" + currentSeconds + " " + timeOfDay;
+       	
+       	
+       	$("#clock").html('<h2>'+currentTimeString+'</h2>');
+       }
+        </script>
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/" class="myvoice"><img alt="Home" src="@routes.Assets.at("images/myvoice.png")" height="50px" width="200px"> </a>
+            </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+                 
+                
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-user fa-fw"></i> @connecteduser.firstName  <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a href="/editprofile/@connecteduser.id"><i class="fa fa-user fa-fw"></i> Edit Profile</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                        </li>
+                    </ul>
+                    <!-- /.dropdown-user -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+            <!-- /.navbar-top-links -->
+
+        </nav>
+        
+        
+        <!-- /.navbar-static-top -->
+<nav class="navbar-default navbar-static-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav" id="side-menu">
+                    <li class="sidebar-search">
+                    </li>
+                    <li>
+                        <a href="/dashboard/@connecteduser.id"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+                    </li>
+                    @if(connecteduser.isAdmin == true) {
+                    <li>
+                        <a href="/users"><i class="fa fa-users fa-fw"></i> Manage Users</a>
+                    </li>
+                    <li>
+                        <a href="/topics"><i class="fa fa-files-o fa-fw"></i> Manage Topics</a>
+                    </li>
+                    <li>
+                        <a href="/userreports"><i class="fa fa-table fa-fw"></i> User Reports</a>
+                    </li>
+                    }  else {
+                    <li>
+                        <a href="/report"><i class="fa fa-bar-chart-o fa-fw"></i> Report</a>
+                    </li>
+                    }
+                    <li>
+                        <a href="/help" class="disabled"><i class="fa fa-question-circle fa-fw"></i> Help</a>
+                    </li>
+                    <li class="sidebar-search">
+                        <div id="clock">
+                            
+                        </div>
+                        <!-- /input-group -->
+                    </li>
+                </ul>
+                <!-- /#side-menu -->
+            </div>
+            <!-- /.sidebar-collapse -->
+        </nav>
+        <!-- /.navbar-static-side -->
+        

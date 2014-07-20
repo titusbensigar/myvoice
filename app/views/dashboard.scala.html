@@ -1,0 +1,119 @@
+@(connecteduser : User, user : User, topic : Topic)
+@header("MyVoice",connecteduser)
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                		<h1 class="page-header">Dashboard <a href="#" id="dashboardDone" name="dashboardDone" class="btn btn-lg btn-primary pull-right disabled">Done!</a></h1>
+	            	@if(flash.get("welcome")) {
+	                    <div class="alert alert-success alert-dismissable">
+		            	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+		            		Hello @connecteduser.firstName @connecteduser.lastName, @flash.get("welcome")
+		            	</div>
+	            	}
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+				<div class="col-lg-6">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <i class="fa fa-play-circle fa-fw"></i> Recording Panel
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+				<div id="recorder" ><div id="canvasdiv"><canvas id="canvas" style="border:solid 1px #ccc;width:100%;"></canvas></div>
+				@if(topic != null) {
+				<div id="timerdiv" >
+					<table style="width:100%">
+						<tr>
+							<td><div style="width:120px;height:120px;"><div id="countdown"  data-timer="15"></div></div></td>
+							<td><h4><span id="timelabel" class="label label-info hide">Get Ready to type the topic in 15 seconds...</span></h4></td>
+						</tr>
+					</table>
+				</div>
+				<div id="typewindowdiv" style="width:100%;" class="hide">
+					<img alt="" src="/assets/images/music.gif" height="128px" width="128px"/>
+				</div>
+				
+				 
+					<div style="margin-top:10px;">
+					<button class="btn btn-large" type="button" id="record" title="Record"><i style="color:red" class="fa fa-circle fa-1x"></i></button>
+					<button class="btn btn-large disabled" type="button" id="recStop"  title="Stop"><i style="color:darkblue" class="fa fa-stop fa-1x"></i></button>
+					<button class="btn btn-large disabled hide" type="button" id="playStop"  title="Stop"><i style="color:darkblue" class="fa fa-stop fa-1x"></i></button>
+					<button class="btn btn-large disabled" type="button" id="play"  title="Play"><i style="color:darkgreen" class="fa fa-play fa-1x"></i></button>
+					<button class="btn btn-large" type="button" id="refresh"  title="Refresh"><i style="color:darkblue" class="fa fa-refresh fa-1x"></i></button>  
+					<!-- <input type="button" id="send" value="Send Data"> -->
+					 Time: <span id="time" style="border:solid 1px #ccc;width:80px;height:20px;background-color:#000;color:#fff;">00:00:00:00</span>
+					 
+					</div>
+					}
+						</div>
+				</div>
+				</div>
+				</div>
+				 <div id="typePanel" class="col-lg-6 hide">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <i class="fa fa-align-center fa-fw"></i> Message Typing Panel
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+								<textarea id="userTopic" name="userTopic" rows="12" cols="5" style="width:100%;"></textarea>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+				</div>
+				<div id="readPanel" class="col-lg-6">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <i class="fa fa-align-center fa-fw"></i> Reading Topic Panel
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+								<div style="margin:5px;" id="readTopicPanel" class="scrollable">
+
+								</div>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+				</div>
+            <!-- /.row -->
+        </div>
+        <div class="row">
+        	<div id="statusPanel" class="col-lg-4">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <i class="fa fa-clock-o fa-fw"></i> Time Panel
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+								<p class="text-info">Record Time: <b><span id="recordTime" ></span></b></p>
+								<p class="text-info">Type Time: <b><span id="typingTime" ></span></b></p>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+				</div>
+        </div>
+        
+        <!-- /#page-wrapper -->
+
+    </div>
+    @if(topic != null) { 
+     	<input type="hidden" id="oTopic" name="oTopic" value="@topic.topic"/>
+    } else {
+		<input type="hidden" id="oTopic" name="oTopic" value=""/>
+   }
+    <script type="text/javascript">
+    	if ($("#oTopic").val() != '' && $("#oTopic").val() != ' ') {
+    		$("#readTopicPanel").html($("#oTopic").val());
+    	} else {
+    		$("#readTopicPanel").html('<h4><span class="label label-important" style="background-color:#b94a48;">No topics assigned, please contact admin to assign topic.</span></h4>');
+    	}
+		
+	</script>
+
+ @common(user,topic)   
+@footer()
+

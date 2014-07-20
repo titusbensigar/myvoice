@@ -1,0 +1,544 @@
+@(user : User, topic : Topic)
+
+<!-- /#wrapper -->
+</div>
+<input type="hidden" id="playtime" name="playtime"/>
+<input type="hidden" id="typetime" name="typetime"/>
+ <script src="@routes.Assets.at("javascripts/plugins/morris/raphael-2.1.0.min.js")"  type="text/javascript"></script>
+	<script src="@routes.Assets.at("javascripts/plugins/morris/morris.js")"  type="text/javascript"></script>
+	
+
+         <script src="@routes.Assets.at("javascripts/chroma.js")" type="text/javascript"></script>
+         <script src="@routes.Assets.at("javascripts/TimeCircles.js")" type="text/javascript"></script>
+<script type="text/javascript">
+
+
+window.requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame    ||
+          window.oRequestAnimationFrame      ||
+          window.msRequestAnimationFrame     ||
+          function(callback, element){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
+
+
+// Global Variables for Audio
+var audioContext;
+
+var sourceNode;
+var analyserNode;
+var javascriptNode;
+var playbackSourceNode;
+var audioStream;
+var array = [];
+
+var recording = null;  // this is the cumulative buffer for your recording
+
+var audioBufferNode = null;
+var audioBuffer = null;
+
+// Global Variables for Drawing
+var x = 0;
+var canvasWidth  = 500;
+var canvasHeight = 200;
+var ctx;
+
+// Uses the chroma.js library by Gregor Aisch to create a tasteful color gradient
+// download from https://github.com/gka/chroma.js
+var hot = new chroma.ColorScale({
+    colors:['#000000', '#0000ff', '#00ffff', '#ffffff','#00FF00','#FFFF00'],
+    positions:[0, .25, .75, 1],
+    mode:'rgb',
+    limits:[0, 256]
+});
+
+
+window.craicAudioContext = (function(){
+  return  window.webkitAudioContext || window.AudioContext ;
+})();
+
+navigator.getMedia = ( navigator.mozGetUserMedia ||
+                       navigator.getUserMedia ||
+                       navigator.webkitGetUserMedia ||
+                       navigator.msGetUserMedia);
+
+var timerOptions = {
+	    "animation": "smooth",
+	    "bg_width": 1.2,
+	    "fg_width": 0.1,
+	    "total_duration": 15,
+	    "start": false,
+	    "circle_bg_color": "#046dc8",
+	    "time": {
+	        "Days": {
+	            "text": "Days",
+	            "color": "#FFCC66",
+	            "show": false
+	        },
+	        "Hours": {
+	            "text": "Hours",
+	            "color": "#99CCFF",
+	            "show": false
+	        },
+	        "Minutes": {
+	            "text": "Minutes",
+	            "color": "#BBFFBB",
+	            "show": false
+	        },
+	        "Seconds": {
+	            "text": "Seconds",
+	            "color": "#6ab4fb",
+	            "direction": "Clockwise",
+	            "count_past_zero": false,
+			    "start": false,
+	            "show": true
+	        }
+	    }
+	};
+var timerObj;
+$(document).ready(function() {
+
+	 timerObj = $("#countdown").TimeCircles({
+		    "animation": "smooth",
+		    "bg_width": 1.2,
+		    "fg_width": 0.1,
+		    "total_duration": 15,
+		    "start": false,
+		    "circle_bg_color": "#046dc8",
+		    "time": {
+		        "Days": {
+		            "text": "Days",
+		            "color": "#FFCC66",
+		            "show": false
+		        },
+		        "Hours": {
+		            "text": "Hours",
+		            "color": "#99CCFF",
+		            "show": false
+		        },
+		        "Minutes": {
+		            "text": "Minutes",
+		            "color": "#BBFFBB",
+		            "show": false
+		        },
+		        "Seconds": {
+		            "text": "Seconds",
+		            "color": "#6ab4fb",
+		            "direction": "Clockwise",
+		            "count_past_zero": false,
+				    "start": false,
+		            "show": true
+		        }
+		    }
+		}); 
+
+    // get the context from the canvas to draw on
+    try {
+	    ctx = $("#canvas").get()[0].getContext("2d");
+	    clearCanvas();
+    } catch(e) {
+    	
+    }
+    // Check that the browser can handle web audio
+    try {
+//        audioContext = new webkitAudioContext();
+        audioContext = new craicAudioContext();
+
+    }
+    catch(e) {
+        alert('Web Audio API is not supported in this browser');
+    }
+
+    // get the input audio stream and set up the nodes
+    try {
+        // calls the function setupAudioNodes
+        navigator.webkitGetUserMedia({audio:true}, setupAudioNodes, onError);
+       // navigator.getMedia({audio:true}, setupAudioNodes, onError);
+
+    } catch (e) {
+        alert('webkitGetUserMedia threw exception :' + e);
+    }
+
+
+    // Start recording by setting onaudioprocess to the function that manages the recording buffer
+    $('#record').click(function(e){
+        e.preventDefault();
+        // execute every time a new sample has been acquired
+        javascriptNode.onaudioprocess = function (e) {
+            addSampleToRecording(e.inputBuffer);
+            PlayTimer.Timer.play();
+            // Analyze the frequencies in this sample and add to the spectorgram
+            analyserNode.getByteFrequencyData(array);
+            requestAnimFrame(drawSpectrogram);
+        }
+        $('#recStop').removeClass('disabled');
+        $('#playStop').addClass('disabled');
+        $('#record').addClass('disabled');
+        $('#playStop').addClass('hide');
+        $('#recStop').removeClass('hide');
+        $("#typewindowdiv").addClass('hide');
+    });
+
+    // Stop recording by setting onaudioprocess to null
+    $('#recStop').click(function(e){
+        e.preventDefault();
+        $('#playtime').val($("#time").html());
+        PlayTimer.Timer.stop();
+        javascriptNode.onaudioprocess = null;
+        $('#play').removeClass('disabled');
+        $('#record').addClass('disabled');
+        $('#typePanel').removeClass('hide');
+        $('#readPanel').addClass('hide');
+        $('#playtime').val($('#time').html());
+        $('#recordTime').html($('#time').html());
+        $("#time").html('00:00:00:00');
+        PlayTimer.resetStopwatch();
+        clearCanvas();
+        $('#recStop').addClass('hide');
+        $('#playStop').removeClass('hide');
+        $('#playStop').addClass('disabled');
+        
+        $("#typewindowdiv").addClass('hide');
+     });
+    
+    $('#dashboardDone').click(function(e){
+        e.preventDefault();
+        $('#typingTime').html($('#time').html());
+        $('#typetime').val($("#time").html());
+        $("#time").html('00:00:00:00');
+        PlayTimer.resetStopwatch();
+        //clearTimeout(timeout);
+        $('#play').addClass('disabled');
+        @if(topic != null){
+	       var  url = '/mapusertopic/user/@user.id/topic/@user.defaultTopic.id';
+	        $.ajax({
+	    		type: "POST",
+	    		url: url,
+	    		data: {
+	    			userTopic: $("#userTopic").val(),
+	    			readTime: $("#playtime").val(),
+	    			writeTime: $("#typetime").val()
+	    		},
+	    		dataType: "json"
+	    	}).done(function(data) {
+	    		//show message
+	    		bootbox.dialog({
+				  message: "Report saved successfully.",
+				  title: "<i style=\"color:#60B08C;margin-top:5px;\" class=\"fa fa-check-circle fa-2x\"></i> Success",
+				  buttons: {
+				    main: {
+				      label: "OK",
+				      className: "btn-primary",
+				      callback: function() {
+				    	  $("#canvasdiv").removeClass('hide');
+				          $("#timerdiv").addClass('hide');
+				    	  $('#dashboardDone').addClass('disabled');
+				    	  $('#play').addClass('disabled');
+				          $('#record').addClass('disabled');
+				          $('#recStop').addClass('disabled');
+				          $('#playStop').addClass('disabled');
+				          $('#typePanel').addClass('hide');
+				          $('#readPanel').removeClass('hide');
+				          $("#userTopic").val('');
+				          $("#typewindowdiv").addClass('hide');
+				      }
+				    }
+				  }
+				});
+	    	}).error(function(xhr, status) {
+	
+	    	});
+        }
+    });
+    
+    $('#playStop').click(function(e){
+        e.preventDefault();
+        $('#typingTime').html($('#time').html());
+        $('#typetime').val($("#time").html());
+        $("#time").html('00:00:00:00');
+        PlayTimer.resetStopwatch();
+        
+        $('#play').addClass('disabled');
+        $("#typewindowdiv").addClass('hide');
+        $("#canvasdiv").removeClass('hide');
+    });
+    var timeout; 
+    // Play the recording
+    $('#play').click(function(e){
+        e.preventDefault();
+        timerObj.rebuild();
+        $("#timelabel").removeClass('hide'); 
+        $("#timerdiv").removeClass('hide'); 
+        $("#canvasdiv").addClass('hide');	
+        timerObj.start();
+        setTimeout( function() {
+        	callPlay();},15000 );
+     });
+    
+    function callPlay() {
+    	$("#typewindowdiv").removeClass('hide');
+    	$("#userTopic").focus();
+    	$("#canvasdiv").addClass('hide');
+        $("#timerdiv").addClass('hide');
+    	playRecording();
+        PlayTimer.Timer.play();
+        $('#play').addClass('disabled');
+		$("#dashboardDone").removeClass('disabled');
+       // timeout = setTimeout(requestAnimFrame(drawSpectrogram), 1000/60);
+        $('#playStop').removeClass('disabled');
+    }
+    
+
+    // Reset the recording buffer and the graphics, but keep the nodes connected
+    $('#refresh').click(function(e){
+        e.preventDefault();
+        recording = null;
+        totalPlayTime = null;
+       /*  $("#canvasdiv").removeClass('hide');
+        $("#timerdiv").addClass('hide');
+        $("#time").html('00:00:00:00');
+        $('#typingTime').html($('#time').html());
+        $('#typetime').val($("#time").html());
+        $("#playtime").val($("#time").html());
+        $('#recordTime').html($('#time').html());
+        $('#play').addClass('disabled');
+        $('#record').removeClass('disabled');
+        $('#recStop').addClass('disabled');
+        $('#playStop').addClass('disabled'); */
+        PlayTimer.Timer.stop();
+        javascriptNode.onaudioprocess = null;
+        PlayTimer.resetStopwatch();
+        clearCanvas();
+        window.location="/dashboard/@user.id";
+     });
+
+    // Disable audio completely
+    /* $("body").on('click', "#disable_audio",function(e) {
+        e.preventDefault();
+        javascriptNode.onaudioprocess = null;
+        if(audioStream)  audioStream.stop();
+        if(sourceNode)  sourceNode.disconnect();
+     }); */
+     
+   
+});
+
+function fixTimeString(time){
+    var hours = Number(time.match(/^(\d+)/)[1]);
+    var minutes = Number(time.match(/:(\d+)/)[1]);
+    var AMPM = time.match(/\s(.*)$/)[1];
+    if(AMPM == "PM" && hours<12) hours = hours+12;
+    if(AMPM == "AM" && hours==12) hours = hours-12;
+    var sHours = hours.toString();
+    var sMinutes = minutes.toString();
+    if(hours<10) sHours = "0" + sHours;
+    if(minutes<10) sMinutes = "0" + sMinutes;
+    return sHours + ':' + sMinutes + ':00';
+}
+
+
+function getDiffTime(){
+    var start_time = fixTimeString($('#typetime').val());
+    var end_time = fixTimeString($('#typetime').val());
+
+
+var start = new Date("1970-1-1 " + end_time).getTime(),
+    end   = new Date("1970-1-1 " + start_time).getTime();
+
+return parseInt(((start  - end) / 1000 / 3600, 10)*100) / 100;
+
+}
+
+function onError(e) {
+    console.log(e);
+}
+
+
+// Add this buffer to the recording
+// recording is a global
+function addSampleToRecording(inputBuffer) {
+    var currentBuffer = inputBuffer.getChannelData(0);
+
+    if (recording ==  null) {
+        // handle the first buffer
+        recording = currentBuffer;
+    } else {
+        // allocate a new Float32Array with the updated length
+        newlen = recording.length + currentBuffer.length;
+        var newBuffer = new Float32Array(newlen);
+        newBuffer.set(recording, 0);
+        newBuffer.set(currentBuffer, recording.length);
+        recording = newBuffer;
+    }
+}
+var playlength = 0;
+var context, analyser, canvas;
+function playRecording() {
+    // You need to create the buffer node every time we play the sound
+    // Are we able to cleanup that memory or does the footprint grow over time ??
+    if ( recording != null ) {
+        // create the Buffer from the recording
+        audioBuffer = audioContext.createBuffer( 1, recording.length, audioContext.sampleRate );
+        audioBuffer.getChannelData(0).set(recording, 0);
+        try {
+         context = new webkitAudioContext(); // AudioContext object instance
+        }catch(e) {
+        	context = new AudioContext();
+        }
+    	
+    	
+    	canvas = document.getElementById('canvas');
+    	ctx = canvas.getContext('2d');
+        // create the Buffer Node with this Buffer
+        audioBufferNode = audioContext.createBufferSource();
+        audioBufferNode.buffer = audioBuffer;
+        var samples = 128;
+        analyser = audioContext.createAnalyser(); // AnalyserNode method
+        analyser.fftSize = samples; 
+        
+        //console.log('recording buffer length ' + audioBufferNode.buffer.length.toString());
+		playlength = audioBufferNode.buffer.length;
+        // connect the node to the destination and play the audio
+        audioBufferNode.connect(analyser);
+       
+        analyser.connect(audioContext.destination);
+        try{
+        	alert(audioBufferNode);
+        audioBufferNode.noteOn(0);
+        }catch(e){
+        	alert(e);
+        }
+    	frameLooper();
+    }
+}
+
+//frameLooper() animates any style of graphics you wish to the audio frequency
+//Looping at the default frame rate that the browser provides(approx. 60 FPS)
+function frameLooper(){
+	window.requestAnimationFrame(frameLooper);
+	fbc_array = new Uint8Array(analyser.frequencyBinCount);
+	analyser.getByteFrequencyData(fbc_array);
+	ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+	ctx.fillStyle = '#00CCFF'; // Color of the bars
+	bars = 100;
+	for (var i = 0; i < bars; i++) {
+		bar_x = i * 3;
+		bar_width = 2;
+		bar_height = -(fbc_array[i] / 2);
+		//fillRect( x, y, width, height ) // Explanation of the parameters below
+		ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
+	}
+}
+
+function setupAudioNodes(stream) {
+    var sampleSize = 1024;  // number of samples to collect before analyzing FFT
+                            // decreasing this gives a faster sonogram, increasing it slows it down
+   
+    audioStream = stream;
+
+    // The nodes are:  sourceNode -> analyserNode -> javascriptNode -> destination
+	
+    // create an audio buffer source node
+    sourceNode = audioContext.createMediaStreamSource(audioStream);
+	
+    // Set up the javascript node - this uses only one channel - i.e. a mono microphone
+    try {
+    	javascriptNode = audioContext.createJavaScriptNode(sampleSize, 1, 1);
+    }catch(e) {
+    	javascriptNode = audioContext.createScriptProcessor(sampleSize, 1, 1);
+    }
+    // setup the analyser node
+    analyserNode = audioContext.createAnalyser();
+    analyserNode.smoothingTimeConstant = 0.0;
+    analyserNode.fftSize = 1024; // must be power of two
+
+    // connect the nodes together
+    sourceNode.connect(analyserNode);
+    analyserNode.connect(javascriptNode);
+    javascriptNode.connect(audioContext.destination);
+
+    // optional - connect input to audio output (speaker)
+    // This will echo your input back to your speakers - Beware of Feedback !!
+    // sourceNode.connect(audioContext.destination);
+
+    // allocate the array for Frequency Data
+    array = new Uint8Array(analyserNode.frequencyBinCount);
+    
+}
+
+
+// Draw the Spectrogram from the frequency array
+// adapted from http://www.smartjava.org/content/exploring-html5-web-audio-visualizing-sound
+function drawSpectrogram() {
+    for (var i = 0; i < array.length; i += 1) {
+        // Get the color for each pixel from a color map
+        var value = array[i];
+        ctx.beginPath();
+        ctx.strokeStyle = hot.getColor(value).hex();
+
+        // draw a 1 pixel wide rectangle on the canvas
+        var y = canvasHeight - i;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x+1, y);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // loop around the canvas when we reach the end
+    x = x + 1;
+    if(x >= canvasWidth) {
+        x = 0;
+        clearCanvas();
+    }
+}
+
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    x = 0;
+}
+var totalPlayTime = null;
+var count = 0,
+timer = $.timer(function() {
+    count++;
+    $('#counter').html(count);
+});
+timer.set({ time : 1000, autostart : true });
+
+var PlayTimer = new (function() {
+   var $stopwatch, // Stopwatch element on the page
+       incrementTime = 70, // Timer speed in milliseconds
+       currentTime = 0, // Current time in hundredths of a second
+       updateTimer = function() {
+           $stopwatch.html(formatTime(currentTime));
+           currentTime += incrementTime / 10;
+       },
+       init = function() {
+           $stopwatch = $('#time');
+           PlayTimer.Timer = $.timer(updateTimer, incrementTime, false);
+       };
+   this.resetStopwatch = function() {
+       currentTime = 0;
+       this.Timer.stop().once();
+   };
+   $(init);
+});
+
+// Common functions
+function pad(number, length) {
+var str = '' + number;
+while (str.length < length) {str = '0' + str;}
+return str;
+}
+function formatTime(time) {
+var min = parseInt(time / 6000),
+    sec = parseInt(time / 100) - (min * 60),
+    hr =  parseInt(sec / 3600),
+    hundredths = pad(time - (sec * 100) - (min * 6000), 2);
+return (hr > 0 ? pad(hr,2) : "00") + ":" + (min > 0 ? pad(min, 2) : "00") + ":" + pad(sec, 2) + ":" + hundredths;
+}
+
+</script>

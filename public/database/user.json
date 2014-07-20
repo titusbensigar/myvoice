@@ -1,0 +1,10 @@
+[
+	{
+		"id" : 1,
+		"firstName": "Titus",
+		"lastName": "Bensigar",
+		"email": "titus.bensigar@gmail.com",
+		"password": "password",
+		"isAdmin": true
+	}
+]

@@ -1,16 +1,23 @@
 package controllers;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import models.Topic;
 import models.User;
 import models.UserReport;
 import models.UserTopic;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,7 +30,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import util.pdf.PDF;
 import views.html.*;
-
 public class Application extends Controller {
 
 	public static String filePath = Play.application().configuration().getString("data.file.path");
@@ -77,6 +83,8 @@ public class Application extends Controller {
     		newUser.password = requestData.get("password");
     		newUser.firstName = requestData.get("firstName");
     		newUser.lastName = requestData.get("lastName");
+    		newUser.schoolName = requestData.get("schoolName");
+    		newUser.designation = requestData.get("designation");
     		newUser.isAdmin = requestData.get("isAdmin") != null ? true : false;
     		newUser.save();
     		flash("success", "User saved successfully.");
@@ -146,6 +154,8 @@ public class Application extends Controller {
     		user.password = requestData.get("password");
     		user.firstName = requestData.get("firstName");
     		user.lastName = requestData.get("lastName");
+    		user.schoolName = requestData.get("schoolName");
+    		user.designation = requestData.get("designation");
     		user.isAdmin = requestData.get("isAdmin") != null ? true : false;
     		user.save();
     		flash("success", "User edited successfully.");
@@ -209,9 +219,11 @@ public class Application extends Controller {
         String password = requestData.get("password");
     	Logger.info("email : " + email + " ; password: " + password);
     	User user = User.find.where().eq("email",email).findUnique();
+    	Logger.info("user : " + user);
     	if (user != null && user.email.equalsIgnoreCase(email) && user.password.equalsIgnoreCase(password) ) {
     		  flash("welcome","Welcome! Enjoy testing your reading and writing skills.");
     		  session("connected", String.valueOf(user.id));
+    		  Logger.info("user : " + user);
     		 return redirect(controllers.routes.Application.dashboard(user.id)); 
 //    		  return dashboard(user.getId());
     	} else {
@@ -363,6 +375,7 @@ public class Application extends Controller {
 	
     public static Result report() {
     	User connecteduser = User.find.byId(new Long(session().get("connected")));
+    	Logger.info("connected user in report-->" + connecteduser);
     	return ok(report.render(connecteduser));
     }
     
@@ -371,11 +384,60 @@ public class Application extends Controller {
     	String readTime = requestData.get("readTime");
     	String writeTime = requestData.get("writeTime");
     	String usertopic = requestData.get("userTopic");
+    	
+    	String readingstart = requestData.get("readingstart");
+    	String readingend = requestData.get("readingend");
+    	String typingstart = requestData.get("typingstart");
+    	String typingend = requestData.get("typingend");
+    	
+    	String matchCharCount = requestData.get("matchCharCount");
+    	String mismatchCharCount = requestData.get("mismatchCharCount");
+    	String originalCharCount = requestData.get("originalCharCount");
+    	
+    	Logger.info("readingstart : " + readingstart );
+    	Logger.info("readingend : " + readingend );
+    	Logger.info("typingstart : " + typingstart );
+    	Logger.info("typingend : " + typingend );
+    	
+    	Logger.info("matchCharCount : " + matchCharCount );
+    	Logger.info("mismatchCharCount : " + mismatchCharCount );
+    	Logger.info("originalCharCount : " + originalCharCount );
+    	
     	Logger.info("userId : " + userId );
     	UserTopic userTopic = new UserTopic();
     	userTopic.createdDate = new Date();
     	userTopic.readTime = readTime;
     	userTopic.writeTime = writeTime;
+    	SimpleDateFormat format =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+//    	SimpleDateFormat inputformat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    	try {
+			userTopic.readingStart = StringUtils.isNotBlank(readingstart) ? format.parse(readingstart) : null;
+			userTopic.readingEnd = StringUtils.isNotBlank(readingend) ? format.parse(readingend) : null;
+	    	userTopic.typingStart = StringUtils.isNotBlank(typingstart) ? format.parse(typingstart) : null;
+	    	userTopic.typingEnd = StringUtils.isNotBlank(typingend) ? format.parse(typingend) : null;
+	    	
+	    	
+	    	SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss:SS");
+	    	timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+	    	Date date1 = timeFormat.parse(readTime);
+	    	Date date2 = timeFormat.parse(writeTime);
+
+	    	long sum = date1.getTime() + date2.getTime();
+	    	Logger.info("sum time -> "+ sum);
+	    	String date3 = timeFormat.format(new Date(sum));
+	    	userTopic.totalTime = date3;
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	
+    	userTopic.matchCount = StringUtils.isNotBlank(matchCharCount) ? new Long(matchCharCount) : 0L;
+    	userTopic.misMatchCount = StringUtils.isNotBlank(mismatchCharCount) ? new Long(mismatchCharCount) : 0L;
+    	userTopic.totalCount = StringUtils.isNotBlank(originalCharCount) ? new Long(originalCharCount) : 0L;
+    	
+    	
     	Topic topic = Topic.find.byId(topicId);
     	userTopic.topic = topic;
     	User user = User.find.byId(userId);
@@ -410,6 +472,7 @@ public class Application extends Controller {
     	JSONObject obj = new JSONObject();
     	try {
     	List<UserTopic> topics = UserTopic.find.where().eq("user.id",new Long(session().get("connected"))).findList();
+    	Logger.info("user report->" + topics);
     	List<UserReport> reports = new ArrayList<UserReport>();
     	try {
 	    	if (topics != null && topics.size() > 0) {
@@ -420,6 +483,16 @@ public class Application extends Controller {
 	    			report.email = usertopic.user.email;
 	    			report.readTime = usertopic.readTime;
 	    			report.writeTime = usertopic.writeTime;
+	    			report.totalTime = usertopic.totalTime;
+	    			report.readingStart = usertopic.readingStart;
+	    			report.readingEnd = usertopic.readingEnd;
+	    			report.typingStart = usertopic.typingStart;
+	    			report.typingEnd = usertopic.typingEnd;
+	    			
+	    			report.matchCount = usertopic.matchCount;
+	    			report.misMatchCount = usertopic.misMatchCount;
+	    			report.totalCount = usertopic.totalCount;
+	    			
 	    			report.createdDate = usertopic.createdDate;
 	    			report.originalTopic = usertopic.topic.topic;
 	    			report.userTopic = usertopic.userTopic;
@@ -447,8 +520,50 @@ public class Application extends Controller {
 		return ok(obj.toString());
 	}
     
-    public static Result pdfreport() {
+    public static Result pdfreport(Long selectId) {
     	User connecteduser = User.find.byId(new Long(session().get("connected")));
-    	return PDF.ok(pdfreport.render());
+    	UserTopic userTopic = UserTopic.find.byId(selectId);
+    	BigDecimal perc = new BigDecimal(0);
+    	Date currDate = new Date();
+    	String currDateStr = null;
+    	if (userTopic != null) {
+    		Logger.info("userTopic.matchCount--->" + userTopic.matchCount);
+    		Logger.info("userTopic.totalCount--->" + userTopic.totalCount);
+    		BigDecimal per = new BigDecimal((userTopic.matchCount.doubleValue()/userTopic.totalCount.doubleValue())*100);
+    		Logger.info("per--->" + per);
+    		perc = per.round(new MathContext(4, RoundingMode.HALF_UP));
+    		Logger.info("perc--->" + perc);
+    		SimpleDateFormat format =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    		currDateStr = format.format(currDate);
+			userTopic.readingStartStr = userTopic.readingStart != null ? format.format(userTopic.readingStart) : null;
+			userTopic.readingEndStr = userTopic.readingEnd != null ? format.format(userTopic.readingEnd) : null;
+	    	userTopic.typingStartStr = userTopic.typingStart != null ? format.format(userTopic.typingStart) : null;
+	    	userTopic.typingEndStr = userTopic.typingEnd != null ? format.format(userTopic.typingEnd) : null;
+    	}
+    	return PDF.ok(pdfreport.render(userTopic,perc.doubleValue(),currDateStr));
+    }
+    
+    public static Result viewuserreport(Long selectedId) {
+    	User connecteduser = User.find.byId(new Long(session().get("connected")));
+    	UserTopic userTopic = UserTopic.find.byId(selectedId);
+    	BigDecimal perc = new BigDecimal(0);
+    	Date currDate = new Date();
+    	String currDateStr = null;
+    	if (userTopic != null) {
+    		Logger.info("userTopic.matchCount--->" + userTopic.matchCount);
+    		Logger.info("userTopic.totalCount--->" + userTopic.totalCount);
+    		BigDecimal per = new BigDecimal((userTopic.matchCount.doubleValue()/userTopic.totalCount.doubleValue())*100);
+    		Logger.info("per--->" + per);
+    		perc = per.round(new MathContext(4, RoundingMode.HALF_UP));
+    		Logger.info("perc--->" + perc);
+    		SimpleDateFormat format =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    		currDateStr = format.format(currDate);
+			userTopic.readingStartStr = userTopic.readingStart != null ? format.format(userTopic.readingStart) : null;
+			userTopic.readingEndStr = userTopic.readingEnd != null ? format.format(userTopic.readingEnd) : null;
+	    	userTopic.typingStartStr = userTopic.typingStart != null ? format.format(userTopic.typingStart) : null;
+	    	userTopic.typingEndStr = userTopic.typingEnd != null ? format.format(userTopic.typingEnd) : null;
+    	}
+    	
+    	return ok(viewuserreport.render(userTopic,perc.doubleValue(),currDateStr));
     }
 }

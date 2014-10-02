@@ -22,6 +22,8 @@ create table user (
   is_admin                  tinyint(1) default 0,
   deleted                   tinyint(1) default 0,
   default_topic_id          bigint,
+  school_name               varchar(255),
+  designation               varchar(255),
   constraint pk_user primary key (id))
 ;
 
@@ -33,6 +35,14 @@ create table user_topic (
   created_date              datetime,
   read_time                 varchar(255),
   write_time                varchar(255),
+  total_time                varchar(255),
+  reading_start             datetime,
+  reading_end               datetime,
+  typing_start              datetime,
+  typing_end                datetime,
+  match_count               bigint,
+  mis_match_count           bigint,
+  total_count               bigint,
   deleted                   tinyint(1) default 0,
   constraint pk_user_topic primary key (id))
 ;

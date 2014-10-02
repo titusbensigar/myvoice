@@ -82,15 +82,34 @@
             <!-- /.row -->
         </div>
         <div class="row">
-        	<div id="statusPanel" class="col-lg-4">
+        	<div id="statusPanel" class="col-lg-6">
                     <div class="panel panel-info">
                         <div class="panel-heading">
                             <i class="fa fa-clock-o fa-fw"></i> Time Panel
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
-								<p class="text-info">Record Time: <b><span id="recordTime" ></span></b></p>
-								<p class="text-info">Type Time: <b><span id="typingTime" ></span></b></p>
+								<p class="text-info">Reading Duration: <b><span id="recordTime" >00:00:00:00</span></b></p>
+								<p class="text-info">Typing Duration: <b><span id="typingTime" >00:00:00:00</span></b></p>
+								<p class="text-info">Reading Start: <b><span id="readingstart" >00:00:00:00</span></b></p>
+								<p class="text-info">Reading End: <b><span id="readingend" >00:00:00:00</span></b></p>
+								<p class="text-info">Typing Start: <b><span id="typingstart" >00:00:00:00</span></b></p>
+								<p class="text-info">Typing End: <b><span id="typingend" >00:00:00:00</span></b></p>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+				</div>
+			<div id="matchstatusPanel" class="col-lg-6">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <i class="fa fa-dashboard fa-fw"></i> Match Status Panel
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+								<p class="text-info">Matching Character Count: <b><span id="matchCharCount" >0</span></b></p>
+								<p class="text-info">MisMatching Character Count: <b><span id="mismatchCharCount" >0</span></b></p>
+								<p class="text-info">Total Original Character Count: <b><span id="originalCharCount" >0</span></b></p>
+
                         </div>
                         <!-- /.panel-body -->
                     </div>
@@ -112,6 +131,49 @@
     		$("#readTopicPanel").html('<h4><span class="label label-important" style="background-color:#b94a48;">No topics assigned, please contact admin to assign topic.</span></h4>');
     	}
 		
+    	var matchCnt = 0;
+        var mismatchCnt = 0;
+        var originalCharCount = 0;
+
+        function doDiff() {
+        	originalCharCount = $("#oTopic").val().length;
+       	 	$("#originalCharCount").html(originalCharCount);
+        	 var d = diff_match_patch.prototype.diff_main($("#oTopic").val(), $("#userTopic").val());
+        	 var ds = diff_match_patch.prototype.diff_prettyHtml(d);
+        	 
+        }
+        
+        diff_match_patch.prototype.diff_prettyHtml = function(diffs) {
+           
+            var pattern_amp = /&/g;
+            var pattern_lt = /</g;
+            var pattern_gt = />/g;
+            var pattern_para = /\n/g;
+            
+            for (var x = 0; x < diffs.length; x++) {
+              var op = diffs[x][0];    // Operation (insert, delete, equal)
+              var data = diffs[x][1];  // Text of change.
+              //var text = data.replace(pattern_amp, '&amp;').replace(pattern_lt, '&lt;')
+              //    .replace(pattern_gt, '&gt;').replace(pattern_para, '&para;<br>');
+              var text = data.replace(pattern_amp, '&amp;').replace(pattern_lt, '&lt;')
+                  .replace(pattern_gt, '&gt;').replace(pattern_para, '<br>');
+              switch (op) {
+                case DIFF_INSERT:
+                  mismatchCnt+=text.length;
+                  break;
+                case DIFF_DELETE:
+                  mismatchCnt+=text.length;
+                  break;
+                case DIFF_EQUAL:
+                  matchCnt+=text.length;
+                  break;
+              }
+            }
+            $("#matchCharCount").html(matchCnt);
+            $("#mismatchCharCount").html(mismatchCnt);
+            return true;
+          };
+    	
 	</script>
 
  @common(user,topic)   

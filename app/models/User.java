@@ -28,5 +28,8 @@ public class User extends  Model{
     public Boolean deleted = false;
     @OneToOne
     public Topic defaultTopic;
+    
+    public String schoolName;
+    public String designation;
     public static Finder<Long,User> find = new Finder(Long.class, User.class);
 }

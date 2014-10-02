@@ -9,23 +9,14 @@
     <title>MyVoice Report</title>
 
     <!-- Bootstrap core CSS -->
-     <link  href="@routes.Assets.at("stylesheets/bootstrap.min.css")" rel="stylesheet" media="screen, print"/>
+     <link  href="@routes.Assets.at("stylesheets/bootstrap.min.css")" rel="stylesheet" media="all" />
+
     <!-- Add custom CSS here -->
      <link  href="@routes.Assets.at("stylesheets/business-casual.css")" rel="stylesheet" media="screen, print"/> 
     <script src="@routes.Assets.at("javascripts/jquery-1.10.2.js")"  type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/bootstrap.min.js")"  type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/jquery-dateFormat.min.js")" type="text/javascript"></script>
- <style type="text/css" >
- @@media print  {
-	body:before {
-	  content: url(../images/bg.jpg) /* no-repeat center center fixed */; 
-	  /* -webkit-background-size: cover;
-	  -moz-background-size: cover;
-	  -o-background-size: cover;
-	  background-size: cover; */
-	}
-}
- </style>
+ 
  <script type="text/javascript">
  var longDateFormat  = 'dd/MM/yyyy HH:mm:ss';
  </script>
@@ -115,36 +106,93 @@ $(function () {
     });
 });
 </script>
+
+<style type="text/css">
+@@media print {
+	* { margin: 10 !important; padding: 10 !important; }
+		 html { 
+		 
+			background: url(@routes.Assets.at("images/bg.jpg")) no-repeat center center fixed; 
+			/* -webkit-background-size: cover;
+			-moz-background-size: cover;
+			-o-background-size: cover;
+			background-size: cover; */
+			-webkit-print-color-adjust: exact;
+			/* background-color: #ccc; */
+		}
+		body { 
+		
+			background:url(@routes.Assets.at("images/bg.jpg")) no-repeat center center fixed; 
+			/* -webkit-background-size: cover;
+			-moz-background-size: cover;
+			-o-background-size: cover;
+			background-size: cover; */
+			-webkit-print-color-adjust: exact;
+			/* background-color: #ccc; */
+		} 
+		.bghack {
+			background: #ccc;
+			-webkit-print-color-adjust: exact;
+		}
+	}
+	
+	@@media screen {
+		
+	
+		 html { 
+			background: url(@routes.Assets.at("images/bg.jpg")) no-repeat center center fixed; 
+			-webkit-background-size: cover;
+			-moz-background-size: cover;
+			-o-background-size: cover;
+			background-size: cover;
+			-webkit-print-color-adjust: exact;
+		}
+		body { 
+			background: url(@routes.Assets.at("images/bg.jpg")) no-repeat center center fixed; 
+			-webkit-background-size: cover;
+			-moz-background-size: cover;
+			-o-background-size: cover;
+			background-size: cover;
+			-webkit-print-color-adjust: exact;
+		} 
+		* { margin: 10 !important; padding: 10 !important; }
+   html, body {
+	   width: 100%; 
+	   height: 100%;
+	}
+	.element {
+	-webkit-print-color-adjust: exact;
+	}
+	}
+</style>
 </head>
 
-<body >
+<body>
+    <div class="bghack">
     <div class="brand" align="center"><img alt="MyVoice" src="@routes.Assets.at("images/myvoice.png")" height="75px" width="275px"></div>
     <div class="address-bar">Testing basic skills of Reading, Speaking, Listening and Typing &#45; An Integrated Approach</div>
 
     <div class="container">
-
-        
-        <div class="row">
-            <div class="">
-        	<table style="cellspacing:15px;width:100%;">
+	 <div class="row">
+        	<table style="margin-left:20px;cellspacing:15px;width:100%;">
         		<tr>
 	        		<td><h2 class="intro-text text-left "><strong>Name of the Teacher:</strong></h2></td>
-	        		<td colspan=3 style="color:#7A160B"><h2 class="intro-text text-left "> <strong>@userTopic.user.firstName @userTopic.user.lastName</strong></h2></td>
+	        		<td colspan=3 class="clrRed"><h2 class="intro-text text-left "> <strong>@userTopic.user.firstName @userTopic.user.lastName</strong></h2></td>
 	        		<td><h2 class="intro-text text-left "><strong>School:</strong></h2></td>
-	        		<td style="color:#7A160B"><h2 class="intro-text text-left "><strong>@userTopic.user.schoolName</strong></h2></td>
+	        		<td class="clrRed"><h2 class="intro-text text-left "><strong>@userTopic.user.schoolName</strong></h2></td>
         		</tr>
         		<tr>
         			<td> <h2 class="intro-text text-left "><strong>Email:</strong></h2></td>
-	        		<td style="color:#7A160B"><h2 class="intro-text text-left "> <strong>@userTopic.user.email</strong></h2></td>
+	        		<td class="clrRed"><h2 class="intro-text text-left "> <strong>@userTopic.user.email</strong></h2></td>
 	        		<td> <h2 class="intro-text text-left "><strong>Date:</strong></h2></td>
-	        		<td style="color:#7A160B"><h2 class="intro-text text-left " > <strong>@currDateStr</strong></h2></td>
+	        		<td class="clrRed"><h2 class="intro-text text-left " > <strong>@currDateStr</strong></h2></td>
 	        		<td><h2 class="intro-text text-left "><strong>Designation:</strong></h2></td>
-	        		<td style="color:#7A160B"><h2 class="intro-text text-left "><strong>@userTopic.user.designation</strong></h2></td>
+	        		<td class="clrRed"><h2 class="intro-text text-left "><strong>@userTopic.user.designation</strong></h2></td>
         		</tr>
         	</table>
+        	
         	</div>
-        	</div>
-        	<div class="row">
+        	
         	<div class="box">
         	 <div class="col-lg-12">
         	 <div><h5>Timing</h5></div>
@@ -153,64 +201,65 @@ $(function () {
 		        		<tr>
 		        			<td><p class="text-left reportlabel">Reading</p></td>
 		        			<td><p class="text-left reportlabel">Beginning</p></td>
-		        			<td align="center" style="width:200px;background-color:#E6DBB9">@userTopic.readingStartStr</td>
+		        			<td align="center" class="tdbg200">@userTopic.readingStartStr</td>
 		        			<td><p class="text-left reportlabel">Ending</p></td>
-		        			<td align="center" style="width:200px;background-color:#E6DBB9">@userTopic.readingEndStr</td>
-		        			<td><p class="text-left reportlabel">Time taken</p></td>
-		        			<td align="center" style="width:100px;background-color:#E6DBB9">@userTopic.readTime</td>
+		        			<td align="center" class="tdbg200">@userTopic.readingEndStr</td>
+		        			<td><p class="text-left reportlabel"><nobr>Time taken</nobr></p></td>
+		        			<td align="center" class="tdbg">@userTopic.readTime</td>
 		        		</tr>
 		        		<tr>
 		        			<td><p class="text-left reportlabel">Listening and Typing</p></td>
 		        			<td><p class="text-left reportlabel">Beginning</p></td>
-		        			<td align="center" style="width:200px;background-color:#E6DBB9">@userTopic.typingStartStr</td>
+		        			<td align="center" class="tdbg200">@userTopic.typingStartStr</td>
 		        			<td><p class="text-left reportlabel">Ending</p></td>
-		        			<td align="center" style="width:200px;background-color:#E6DBB9">@userTopic.typingEndStr</td>
-		        			<td><p class="text-left reportlabel">Time taken</p></td>
-		        			<td align="center" style="width:100px;background-color:#E6DBB9">@userTopic.writeTime</td>
+		        			<td align="center" class="tdbg200">@userTopic.typingEndStr</td>
+		        			<td><p class="text-left reportlabel"><nobr>Time taken</nobr></p></td>
+		        			<td align="center" class="tdbg">@userTopic.writeTime</td>
 		        		</tr>
 		        		<tr>
 		        			<td colspan=6><p class="text-left reportlabel">Total time taken for Reading, Speaking, Listening and Typing</p></td>
-		        			<td align="center" style="width:100px;background-color:#A6914A">@userTopic.totalTime</td>
+		        			<td align="center" class="tdbg100b"><strong>@userTopic.totalTime</strong></td>
 		        		</tr>
 		        	</table>
 		        	</div>
         	 </div>
         	</div>
-        	</div>
         	
-           <div class="row">
+        	
+          
             <div class="box">
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                 	<div><h5>Topic</h5></div>
-                	<div class="">
-	                    <table style="cellspacing:15px;width:100%;">
-			        		<tr><td><p class="text-left reportlabel">Matching character count</p></td><td align="center" style="width:100px;background-color:#E6DBB9">@userTopic.matchCount</td></tr>
-			        		<tr><td><p class=" text-left reportlabel">MisMatching character count</p></td><td align="center" style="width:100px;background-color:#E6DBB9">@userTopic.misMatchCount</td></tr>
-			        		<tr><td><p class="text-left reportlabel">Total original character count</p></td><td align="center" style="width:100px;background-color:#E6DBB9">@userTopic.totalCount</td></tr>
-			        		<tr><td><p class="text-left reportlabel">Percentage of matching character count</p></td><td align="center" style="width:100px;background-color:#A6914A">@perc %</td></tr>
+                	<table style="width:100%" >
+                		<tr>
+                			<td width="50%">
+                			<table style="cellspacing:15px;width:100%;">
+			        		<tr><td><p class="text-left reportlabel">Matching character count</p></td><td align="center" class="tdbg">@userTopic.matchCount</td></tr>
+			        		<tr><td><p class=" text-left reportlabel">MisMatching character count</p></td><td align="center" class="tdbg">@userTopic.misMatchCount</td></tr>
+			        		<tr><td><p class="text-left reportlabel">Total original character count</p></td><td align="center" class="tdbg">@userTopic.totalCount</td></tr>
+			        		<tr><td><p class="text-left reportlabel">Percentage of matching character count</p></td><td align="center" class="tdbg100b"><strong>@perc %</strong></td></tr>
 	        			</table> 
-	        		</div>
+                			</td>
+                			<td width="50%">
+                			<div id="container" style="min-width: 410px; max-width: 450px; height: 225px; margin: 0 auto"></div>
+                			</td>
+                		</tr>
+                		
+                	</table>
+	                    
                 </div>
-                <div class="col-lg-6">
-                    <div id="container" style="min-width: 310px; max-width: 350px; height: 250px; margin: 0 auto"></div>
-                </div>
+               
             </div>
-        </div>
-		
-        <div class="row">
+
             <div class=" vision">
                 <div class="col-lg-12 ">
-                    <p class="text-left" style="color:#176798">Testing the basic skills a teacher must master</p>
-                    <p class="text-center" style="color:#176798">Projecting the level of skills into concrete form</p>
-                    <p class="text-right" style="color:#176798">Enabling teachers to hone up the skills</p>
+                    <p class="text-left clrBlue" >Testing the basic skills a teacher must master</p>
+                    <p class="text-center clrBlue" >Projecting the level of skills into concrete form</p>
+                    <p class="text-right clrBlue" >Enabling teachers to hone up the skills</p>
                 </div>
             </div>
-        </div>
-
-    
    </div>
     <!-- /.container -->
-
     <div class="row footer">
         <div class="container">
             <div class="row">
@@ -221,7 +270,7 @@ $(function () {
         </div>
     </div>
 
-
+</div>
 </body>
 
 </html>

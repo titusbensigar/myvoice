@@ -37,7 +37,14 @@
                                             <label>Password</label>
                                             <input value="@user.password" class="form-control" placeholder="Password" id="password" name="password">
                                         </div>
-                                        
+                                        <div class="form-group">
+                                            <label>School Name</label>
+                                            <input value="@user.schoolName" class="form-control" placeholder="School Name" id="schoolName" name="schoolName">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Designation</label>
+                                            <input value="@user.designation" class="form-control" placeholder="Designation" id="designation" name="designation">
+                                        </div>
                                         <input type="hidden" id="isAdmin" name="isAdmin" value="@user.isAdmin"/>
                                         <input type="hidden" id="id" name="id" value="@user.id"/>
                                         <input type="hidden" id="topicId" name="topicId" value="@user.defaultTopic.id"/>

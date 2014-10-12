@@ -38,7 +38,7 @@ $(function () {
         		color: '#610B0B',
                 font: 'bold 18px "Trebuchet MS", Verdana, sans-serif'
              },
-            text: 'Testing Result'
+            text: 'Test Result'
         },
         subtitle: {
         	style: {
@@ -48,7 +48,7 @@ $(function () {
             text: 'Comparison for Reading, Speaking, Listening and Typing'
         },
         xAxis: {
-            categories: ['Comparison'],
+            categories: [''],
             title: {
                 text: null
             }
@@ -201,18 +201,18 @@ $(function () {
 		        		<tr>
 		        			<td><p class="text-left reportlabel">Reading</p></td>
 		        			<td><p class="text-left reportlabel">Beginning</p></td>
-		        			<td align="center" class="tdbg200">@userTopic.readingStartStr</td>
+		        			<td align="center" class="tdbg">@userTopic.readingStartStr</td>
 		        			<td><p class="text-left reportlabel">Ending</p></td>
-		        			<td align="center" class="tdbg200">@userTopic.readingEndStr</td>
+		        			<td align="center" class="tdbg">@userTopic.readingEndStr</td>
 		        			<td><p class="text-left reportlabel"><nobr>Time taken</nobr></p></td>
 		        			<td align="center" class="tdbg">@userTopic.readTime</td>
 		        		</tr>
 		        		<tr>
 		        			<td><p class="text-left reportlabel">Listening and Typing</p></td>
 		        			<td><p class="text-left reportlabel">Beginning</p></td>
-		        			<td align="center" class="tdbg200">@userTopic.typingStartStr</td>
+		        			<td align="center" class="tdbg">@userTopic.typingStartStr</td>
 		        			<td><p class="text-left reportlabel">Ending</p></td>
-		        			<td align="center" class="tdbg200">@userTopic.typingEndStr</td>
+		        			<td align="center" class="tdbg">@userTopic.typingEndStr</td>
 		        			<td><p class="text-left reportlabel"><nobr>Time taken</nobr></p></td>
 		        			<td align="center" class="tdbg">@userTopic.writeTime</td>
 		        		</tr>
@@ -229,7 +229,7 @@ $(function () {
           
             <div class="box">
                 <div class="col-lg-12">
-                	<div><h5>Topic</h5></div>
+                	<div><h5>Topic: </h5><p>@userTopic.topic.topic</p></div>
                 	<table style="width:100%" >
                 		<tr>
                 			<td width="50%">
@@ -252,10 +252,9 @@ $(function () {
             </div>
 
             <div class=" vision">
-                <div class="col-lg-12 ">
-                    <p class="text-left clrBlue" >Testing the basic skills a teacher must master</p>
-                    <p class="text-center clrBlue" >Projecting the level of skills into concrete form</p>
-                    <p class="text-right clrBlue" >Enabling teachers to hone up the skills</p>
+                <div class="col-lg-12 " style="margin-top:5px;">
+                    <p class="text-left clrBlue" >Testing the basic skills a teacher must master</p><p class="text-right clrBlue" >Projecting the level of skills into concrete form</p>
+                    <p class="text-left clrBlue" style="color:#A6914A" >Concept: Eugene Dulles Leen</p><p class="text-center clrBlue" >Enabling teachers to hone the skills</p>
                 </div>
             </div>
    </div>

@@ -45,6 +45,8 @@ public class UserTopic  extends Model{
 	public Boolean deleted = false;
 	public static Finder<Long,UserTopic> find = new Finder(Long.class, UserTopic.class);
 	
+	public String filename;
+	
 	@Transient
 	public String readingStartStr;
 	@Transient

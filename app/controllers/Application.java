@@ -1,5 +1,8 @@
 package controllers;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -11,12 +14,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.UUID;
+
+import javax.imageio.ImageIO;
 
 import models.Topic;
 import models.User;
 import models.UserReport;
 import models.UserTopic;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,15 +32,24 @@ import play.Logger;
 import play.Play;
 import play.data.DynamicForm;
 import play.data.Form;
+import play.libs.F.Function;
+import play.libs.F.Promise;
 import play.libs.Json;
+import play.libs.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
-import util.pdf.PDF;
+import vo.ChartVO;
 import views.html.*;
+import com.google.gson.Gson;
 public class Application extends Controller {
-
+	public static final String phantomJSUrl = Play.application().configuration().getString("phantomJSUrl","http://localhost:5555/");
+	public static final String appUrl = Play.application().configuration().getString("appUrl","http://localhost:9000/");
 	public static String filePath = Play.application().configuration().getString("data.file.path");
+	public static String phantomReportPath = Play.application().configuration().getString("phantomReportPath","/Users/ubensti/pearson/phantomjs-1.9.7-macosx/bin/charts");
 	
+	public static String basefilepath =  "/public/images/reports/";
+	
+	public static String filename = null;
 	
 	public static Result index() {
 		session().remove("connected");
@@ -221,7 +237,7 @@ public class Application extends Controller {
     	User user = User.find.where().eq("email",email).findUnique();
     	Logger.info("user : " + user);
     	if (user != null && user.email.equalsIgnoreCase(email) && user.password.equalsIgnoreCase(password) ) {
-    		  flash("welcome","Welcome! Enjoy testing your reading and writing skills.");
+    		  flash("welcome","Welcome! Enjoy testing your Reading,Speaking,Listening and Typing Skills");
     		  session("connected", String.valueOf(user.id));
     		  Logger.info("user : " + user);
     		 return redirect(controllers.routes.Application.dashboard(user.id)); 
@@ -443,7 +459,41 @@ public class Application extends Controller {
     	User user = User.find.byId(userId);
     	userTopic.user = user;
     	userTopic.userTopic = usertopic;
+    	
+    	filename = user.firstName + "_" + user.lastName + "_" +UUID.randomUUID() + ".png";
+    	userTopic.filename = filename;
     	userTopic.save();
+    	Logger.info("map id=>" + userTopic.id);
+    	Gson gson = new Gson();
+    	ChartVO chartVO = new ChartVO();
+    	Map<String, String> headers = new HashMap<String, String>();
+    	Map<String, String> chartProperties = new HashMap<String, String>();
+		headers.put("contentType", "application/x-www-form-urlencoded");
+		chartProperties.put("readinessImagePath", filename);
+		chartProperties.put("s3ImagePath", filename);
+		chartProperties.put("appUrl", appUrl +"pdfreport?selectId=" + userTopic.id + "&userId="+userId);
+		chartProperties.put("top", String.valueOf(0));
+		chartProperties.put("left", String.valueOf(0));
+//		chartProperties.put("width", String.valueOf(1280));
+//		chartProperties.put("height", String.valueOf(780));
+		chartVO.setChartProperties(chartProperties);
+    	Promise<Result> result  = WS.url(phantomJSUrl).post(gson.toJson(chartVO, ChartVO.class)).map(new Function<WS.Response, Result>() {
+            public Result apply(WS.Response response) {
+            	BufferedImage imBuff;
+				try {
+					imBuff = ImageIO.read(response.getBodyAsStream());
+					ImageIO.write(imBuff, "png", new File(Play.application().path() + basefilepath + filename));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            	Map<String, String> msg = new HashMap<String,String>();
+        		msg.put("status", "success");
+        		msg.put("msg", "Topic saved, Thanks for participating.");
+            	return ok(Json.toJson(msg));
+            }
+        });
+    	
 		Map<String, String> msg = new HashMap<String,String>();
 		msg.put("status", "success");
 		msg.put("msg", "Topic saved, Thanks for participating.");
@@ -471,7 +521,14 @@ public class Application extends Controller {
     public static Result userreports_DT_DP() {
     	JSONObject obj = new JSONObject();
     	try {
-    	List<UserTopic> topics = UserTopic.find.where().eq("user.id",new Long(session().get("connected"))).findList();
+    		List<UserTopic> topics = null;
+    		User connecteduser = User.find.byId(new Long(session().get("connected")));
+    		if (connecteduser != null && connecteduser.isAdmin){
+    			topics = UserTopic.find.all();
+    		} else {
+    			topics = UserTopic.find.where().eq("user.id",new Long(session().get("connected"))).findList();
+    		}
+    	
     	Logger.info("user report->" + topics);
     	List<UserReport> reports = new ArrayList<UserReport>();
     	try {
@@ -520,8 +577,8 @@ public class Application extends Controller {
 		return ok(obj.toString());
 	}
     
-    public static Result pdfreport(Long selectId) {
-    	User connecteduser = User.find.byId(new Long(session().get("connected")));
+    public static Result pdfreport(Long selectId, Long userId) {
+    	User connecteduser = User.find.byId(new Long(userId));
     	UserTopic userTopic = UserTopic.find.byId(selectId);
     	BigDecimal perc = new BigDecimal(0);
     	Date currDate = new Date();
@@ -533,14 +590,16 @@ public class Application extends Controller {
     		Logger.info("per--->" + per);
     		perc = per.round(new MathContext(4, RoundingMode.HALF_UP));
     		Logger.info("perc--->" + perc);
-    		SimpleDateFormat format =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    		currDateStr = format.format(currDate);
+    		SimpleDateFormat format =  new SimpleDateFormat("HH:mm:ss");
+    		SimpleDateFormat dateformat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    		currDateStr = dateformat.format(userTopic.createdDate);
 			userTopic.readingStartStr = userTopic.readingStart != null ? format.format(userTopic.readingStart) : null;
 			userTopic.readingEndStr = userTopic.readingEnd != null ? format.format(userTopic.readingEnd) : null;
 	    	userTopic.typingStartStr = userTopic.typingStart != null ? format.format(userTopic.typingStart) : null;
 	    	userTopic.typingEndStr = userTopic.typingEnd != null ? format.format(userTopic.typingEnd) : null;
     	}
-    	return PDF.ok(pdfreport.render(userTopic,perc.doubleValue(),currDateStr));
+    	
+    	return ok(pdfreport.render(userTopic,perc.doubleValue(),currDateStr));
     }
     
     public static Result viewuserreport(Long selectedId) {
@@ -556,8 +615,9 @@ public class Application extends Controller {
     		Logger.info("per--->" + per);
     		perc = per.round(new MathContext(4, RoundingMode.HALF_UP));
     		Logger.info("perc--->" + perc);
-    		SimpleDateFormat format =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    		currDateStr = format.format(currDate);
+    		SimpleDateFormat format =  new SimpleDateFormat("HH:mm:ss");
+    		SimpleDateFormat dateformat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    		currDateStr = dateformat.format(userTopic.createdDate);
 			userTopic.readingStartStr = userTopic.readingStart != null ? format.format(userTopic.readingStart) : null;
 			userTopic.readingEndStr = userTopic.readingEnd != null ? format.format(userTopic.readingEnd) : null;
 	    	userTopic.typingStartStr = userTopic.typingStart != null ? format.format(userTopic.typingStart) : null;
@@ -566,4 +626,61 @@ public class Application extends Controller {
     	
     	return ok(viewuserreport.render(userTopic,perc.doubleValue(),currDateStr));
     }
+    
+    public static Result renderreport(Long selId) {
+    	User connecteduser = User.find.byId(new Long(session().get("connected")));
+    	UserTopic userTopic = UserTopic.find.byId(selId);
+    	filename = userTopic.filename;
+    	Logger.info("map id=>" + userTopic.id);
+    	Gson gson = new Gson();
+    	ChartVO chartVO = new ChartVO();
+    	Map<String, String> headers = new HashMap<String, String>();
+    	Map<String, String> chartProperties = new HashMap<String, String>();
+		headers.put("contentType", "application/x-www-form-urlencoded");
+		chartProperties.put("readinessImagePath", filename);
+		chartProperties.put("s3ImagePath", filename);
+		chartProperties.put("appUrl", appUrl +"pdfreport?selectId=" + userTopic.id + "&userId="+userTopic.user.id);
+		chartProperties.put("top", String.valueOf(0));
+		chartProperties.put("left", String.valueOf(0));
+//		chartProperties.put("width", String.valueOf(1280));
+//		chartProperties.put("height", String.valueOf(780));
+		chartVO.setChartProperties(chartProperties);
+    	Promise<Result> result  = WS.url(phantomJSUrl).post(gson.toJson(chartVO, ChartVO.class)).map(new Function<WS.Response, Result>() {
+            public Result apply(WS.Response response) {
+            	BufferedImage imBuff;
+				try {
+					imBuff = ImageIO.read(response.getBodyAsStream());
+					ImageIO.write(imBuff, "png", new File(Play.application().path() + basefilepath + filename));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            	Map<String, String> msg = new HashMap<String,String>();
+        		msg.put("status", "success");
+        		msg.put("msg", "Topic saved, Thanks for participating.");
+            	return ok(Json.toJson(msg));
+            }
+        });
+    	Map<String, String> msg = new HashMap<String,String>();
+		msg.put("status", "error");
+		msg.put("msg", "No report found");
+    	return ok(Json.toJson(msg));
+    }
+    
+    public static Result printuserreport(Long selId) {
+    	User connecteduser = User.find.byId(new Long(session().get("connected")));
+    	UserTopic userTopic = UserTopic.find.byId(selId);
+    	String filename = "/assets/images/reports/" + userTopic.filename;
+    	return ok(printuserreport.render(filename));
+//    	Map<String, String> msg = new HashMap<String,String>();
+//    	if (userTopic != null && userTopic.filename != null) {
+//			msg.put("status", "success");
+//			msg.put("msg", userTopic.filename);
+//    	} else {
+//    		msg.put("status", "error");
+//			msg.put("msg", "No report found");
+//    	}
+//    	return ok(Json.toJson(msg));
+    }
+    
 }

@@ -1,0 +1,72 @@
+@(filename: String)
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>MyVoice Report</title>
+    <link  href="@routes.Assets.at("stylesheets/bootstrap.min.css")" rel="stylesheet">
+    <link  href="@routes.Assets.at("stylesheets/font-awesome.min.css")" rel="stylesheet">
+    
+    <script src="@routes.Assets.at("javascripts/jquery-1.10.2.js")"  type="text/javascript"></script>
+     <script src="@routes.Assets.at("javascripts/jspdf.min.js")" type="text/javascript"></script>
+    
+    <style type="text/css">
+    @@media print {
+    	.noprint {
+    		display: none;
+    	}
+    }
+    </style>
+    
+   
+</head>
+
+<body>
+	 <div class="row noprint" id="nopdforprint">
+		<div class="col-lg-12" style="margin:10px;margin-right:30px;">
+			<a id="printbtn" name="printbtn" class="btn btn-sm btn-primary btn-outline pull-right" style="margin-right:30px;"><i class="fa fa-print fa-fw"></i> Print</a>
+			<!-- &nbsp;<a id="pdfbtn" name="pdfbtn" class="btn btn-sm btn-primary btn-outline pull-right" style="margin-right:10px;"><i class="fa fa-photo fa-fw"></i> PDF</a> -->
+		</div>
+	</div>
+    <img alt="MyVoice" src='@filename'  height="100%" width="100%">
+    
+     <script type="text/javascript">
+    $('#printbtn').click(function(e){
+        e.preventDefault();
+        window.print();
+    });
+    var margins;
+    $('#pdfbtn').click(function(e){
+        e.preventDefault();
+        var doc = new jsPDF('l','pt','letter');
+
+	     // We'll make our own renderer to skip this editor
+	     var specialElementHandlers = {
+	     	'#nopdforprint': function(element, renderer){
+	     		return true;
+	     	}
+	     };
+	     margins = {
+	                top: 0,
+	                bottom: $('img').get(0).naturalHeight,
+	                left: 0,
+	                width: $('img').get(0).naturalWidth
+	            };
+	alert($('img').get(0).naturalWidth);
+	     // All units are in the set measurement for the document
+	     // This can be changed to "pt" (points), "mm" (Default), "cm", "in"
+	     doc.fromHTML($('body').get(0), 5, 5, {
+	     	'width': $('img').get(0).naturalWidth, 
+	     	'elementHandlers': specialElementHandlers
+	     },
+         function(dispose) {
+             // dispose: object with X, Y of the last line add to the PDF 
+             //          this allow the insertion of new lines after html
+             doc.save('MyVoice.pdf');
+         });
+    },margins);
+    </script>
+</body>
+
+</html>

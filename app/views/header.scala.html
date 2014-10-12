@@ -240,7 +240,7 @@
                     <li>
                         <a href="/dashboard/@connecteduser.id"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
                     </li>
-                    @if(connecteduser.isAdmin == true) {
+                    @if(connecteduser != null && connecteduser.isAdmin == true) {
                     <li>
                         <a href="/users"><i class="fa fa-users fa-fw"></i> Manage Users</a>
                     </li>

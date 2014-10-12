@@ -23,16 +23,19 @@
 				            	</div>
 			            	}
 	            		}
+	            		
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->
             <div class="row">
 				<div class="col-lg-12">
+					
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <i class="fa fa-bar-chart-o fa-fw"></i> User Report Panel
                         </div>
+                        
                         <!-- /.panel-heading -->
                         <div class="panel-body">
 							<div class="table-responsive">
@@ -110,7 +113,7 @@
 								<p class="text-info">MisMatching Character Count: <b><span id="mismatchCharCount" >0</span></b></p>
 								<p class="text-info">Total Original Character Count: <b><span id="originalCharCount" >0</span></b></p>
 								<p><a id="viewuserreport" style="cursor:pointer;text-decoration:none;"><i class="fa fa-bar-chart fa-fw"></i> View Report</a></p>
-								<!-- <p><a id="viewuserpdfreport" style="cursor:pointer;text-decoration:none;"><i class="fa fa-bar-chart fa-fw"></i> View PDF Report</a></p> -->
+								<p><a id="viewuserpdfreport" style="cursor:pointer;text-decoration:none;"><i class="fa fa-refresh fa-fw"></i> Regenerate Report</a></p>
                         </div>
                         <!-- /.panel-body -->
                     </div>
@@ -242,7 +245,13 @@
              				"aTargets": [5]
              			},
              			{ "mRender": function(oObj) {
-             					return '<input type="hidden" id="userTopic_' + oObj.id + '" name="userTopic_' + oObj.id + '" value="' + oObj.userTopic + '"/><input type="hidden" id="originalTopic_' + oObj.id + '" name="originalTopic_' + oObj.id + '" value="' + oObj.originalTopic + '"/><a title="Show Diff" href="javascript:doDiff(' + oObj.id +')" ><i class="fa fa-files-o fa-fw"></i></a>&nbsp;|&nbsp;<a title="Remove User Topic" href="/deleteusertopic/' + oObj.id +'" ><i class="fa fa-trash-o fa-fw"></i></a>';
+             					return '<input type="hidden" id="userTopic_' + oObj.id + '" name="userTopic_' + oObj.id +
+             					'" value="' + oObj.userTopic + '"/><input type="hidden" id="originalTopic_' + oObj.id + 
+             					'" name="originalTopic_' + oObj.id + '" value="' + oObj.originalTopic + 
+             					'"/><a title="Show Diff" href="javascript:doDiff(' + oObj.id +
+             							')" ><i class="fa fa-files-o fa-fw"></i></a>&nbsp;|&nbsp;<a title="Generate Report" href="javascript:generateReport(' + 
+             							oObj.id +');" ><i class="fa fa-print fa-fw"></i></a>&nbsp;|&nbsp;<a title="Remove User Topic" href="/deleteusertopic/' + 
+             							oObj.id +'" ><i class="fa fa-trash-o fa-fw"></i></a>';
              				},
              				"bSortable": false,
              				"aTargets": [6]
@@ -298,20 +307,93 @@
         $("#viewreportform").submit();
     		
     });
-    $('#viewuserpdfreport').click(function(e){
+   $('#viewuserpdfreport').click(function(e){
         e.preventDefault();
-        alert(selectedId);
-        $("#selectId").val(selectedId);
-        $("#viewpdfreportform").submit();
+        if (selectedId == '' || selectedId == 'undefined' || !selectedId) {
+        	bootbox.dialog({
+				  message: "Please select report and view report.",
+				  title: "<i style=\"color:#982217;margin-top:5px;\" class=\"fa fa-times-circle fa-2x\"></i> Error",
+				  buttons: {
+				    main: {
+				      label: "OK",
+				      className: "btn-primary",
+				      callback: function() {
+				    	  return true;
+				      }
+				    }
+				  }
+				});
+        	return false;
+        }
+        
+        $.ajax({
+    		type: "GET",
+    		url: '/renderreport',
+    		data: {
+    			selectId: selectedId
+    		},
+    		dataType: "json"
+    	}).done(function(data) {
+    		bootbox.dialog({
+    				message: "Report saved successfully.",
+				  title: "<i style=\"color:#60B08C;margin-top:5px;\" class=\"fa fa-check-circle fa-2x\"></i> Success",
+				  buttons: {
+				    main: {
+				      label: "OK",
+				      className: "btn-primary",
+				      callback: function() {
+				    	  return true;
+				      }
+				    }
+				  }
+				});
+    	}).error(function(xhr, status) {
+    		bootbox.dialog({
+				  message: "Report generation failed.",
+				  title: "<i style=\"color:#982217;margin-top:5px;\" class=\"fa fa-times-circle fa-2x\"></i> Error",
+				  buttons: {
+				    main: {
+				      label: "OK",
+				      className: "btn-primary",
+				      callback: function() {
+				    	  return true;
+				      }
+				    }
+				  }
+				});
+    	});
+        
     		
     });
+     
+    function generateReport(sId) {
+        if (sId == '' || sId == 'undefined' || !sId) {
+        	bootbox.dialog({
+				  message: "Please select report and view report.",
+				  title: "<i style=\"color:#982217;margin-top:5px;\" class=\"fa fa-times-circle fa-2x\"></i> Error",
+				  buttons: {
+				    main: {
+				      label: "OK",
+				      className: "btn-primary",
+				      callback: function() {
+				    	  return true;
+				      }
+				    }
+				  }
+				});
+        	return false;
+        }
+        $("#selId").val(sId);
+        $("#printreportform").submit();
+    	
+    }
      </script>
     <form action="/viewuserreport" method="get" target="_blank" name="viewreportform" id="viewreportform">
     	<input type="hidden" name="selectedId" id="selectedId">
     </form>
-    <form  action="/pdfreport" method="get" target="_blank" name="viewpdfreportform" id="viewpdfreportform">
-    	<input type="hidden" name="selectId" id="selectId">
-    </form>
+     <form  action="/printreport" method="get" name="printreportform" id="printreportform" target="_blank">
+    	<input type="hidden" name="selId" id="selId">
+    </form> 
  
 @footer()
 

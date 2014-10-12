@@ -44,6 +44,7 @@ create table user_topic (
   mis_match_count           bigint,
   total_count               bigint,
   deleted                   tinyint(1) default 0,
+  filename                  varchar(255),
   constraint pk_user_topic primary key (id))
 ;
 

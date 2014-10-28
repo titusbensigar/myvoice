@@ -1,4 +1,4 @@
-@(filename: String)
+@(selId: Long)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -29,7 +29,7 @@
 			<!-- &nbsp;<a id="pdfbtn" name="pdfbtn" class="btn btn-sm btn-primary btn-outline pull-right" style="margin-right:10px;"><i class="fa fa-photo fa-fw"></i> PDF</a> -->
 		</div>
 	</div>
-    <img alt="MyVoice" src='@filename'  height="100%" width="100%">
+    <img alt="MyVoice" src='@routes.Application.showImage(selId)'  height="100%" width="100%">
     
      <script type="text/javascript">
     $('#printbtn').click(function(e){

@@ -1,6 +1,7 @@
 package controllers;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -23,7 +24,6 @@ import models.User;
 import models.UserReport;
 import models.UserTopic;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,7 +47,7 @@ public class Application extends Controller {
 	public static String filePath = Play.application().configuration().getString("data.file.path");
 	public static String phantomReportPath = Play.application().configuration().getString("phantomReportPath","/Users/ubensti/pearson/phantomjs-1.9.7-macosx/bin/charts");
 	
-	public static String basefilepath =  "/public/images/reports/";
+	public static String basefilepath = Play.application().path() + "/data/images/";
 	
 	public static String filename = null;
 	
@@ -482,7 +482,7 @@ public class Application extends Controller {
             	BufferedImage imBuff;
 				try {
 					imBuff = ImageIO.read(response.getBodyAsStream());
-					ImageIO.write(imBuff, "png", new File(Play.application().path() + basefilepath + filename));
+					ImageIO.write(imBuff, "png", new File( basefilepath + filename));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -650,7 +650,7 @@ public class Application extends Controller {
             	BufferedImage imBuff;
 				try {
 					imBuff = ImageIO.read(response.getBodyAsStream());
-					ImageIO.write(imBuff, "png", new File(Play.application().path() + basefilepath + filename));
+					ImageIO.write(imBuff, "png", new File(basefilepath + filename));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -670,8 +670,8 @@ public class Application extends Controller {
     public static Result printuserreport(Long selId) {
     	User connecteduser = User.find.byId(new Long(session().get("connected")));
     	UserTopic userTopic = UserTopic.find.byId(selId);
-    	String filename = "/assets/images/reports/" + userTopic.filename;
-    	return ok(printuserreport.render(filename));
+    	String filename = "/reports/" + userTopic.filename;
+    	return ok(printuserreport.render(selId));
 //    	Map<String, String> msg = new HashMap<String,String>();
 //    	if (userTopic != null && userTopic.filename != null) {
 //			msg.put("status", "success");
@@ -682,5 +682,22 @@ public class Application extends Controller {
 //    	}
 //    	return ok(Json.toJson(msg));
     }
-    
+ 
+    public static Result showImage(Long selId) {
+    	UserTopic userTopic = UserTopic.find.byId(selId);
+    	String filename = basefilepath + userTopic.filename;
+    	Logger.info("filename==>"+filename);
+    	File file = new File(filename);
+    	 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	BufferedImage image;
+		try {
+			image = ImageIO.read(file);
+			
+		        ImageIO.write(image, "png", baos);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return ok(baos.toByteArray()).as("image/png");
+    }
 }

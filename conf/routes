@@ -43,6 +43,8 @@ GET		/deleteusertopic/:id  			controllers.Application.deleteusertopic(id: Long)
 
 GET		/help							controllers.Application.help()
 
+GET		/showImage				controllers.Application.showImage(selId: Long)
+
 POST		/pdfreport							controllers.Application.pdfreport(selectId: Long, userId : Long)
 GET		/renderreport							controllers.Application.renderreport(selectId: Long)
 GET		/viewuserreport						controllers.Application.viewuserreport(selectedId: Long)
@@ -50,3 +52,4 @@ GET		/printreport							controllers.Application.printuserreport(selId: Long)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
+#GET     /data/images/*file               controllers.Assets.at(path="/data/images", file)

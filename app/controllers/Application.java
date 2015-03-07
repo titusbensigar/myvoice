@@ -42,10 +42,10 @@ import vo.ChartVO;
 import views.html.*;
 import com.google.gson.Gson;
 public class Application extends Controller {
-	public static final String phantomJSUrl = Play.application().configuration().getString("phantomJSUrl","http://localhost:5555/");
-	public static final String appUrl = Play.application().configuration().getString("appUrl","http://localhost:9000/");
+	public static final String phantomJSUrl = Play.application().configuration().getString("phantomJSUrl");
+	public static final String appUrl = Play.application().configuration().getString("appUrl");
 	public static String filePath = Play.application().configuration().getString("data.file.path");
-	public static String phantomReportPath = Play.application().configuration().getString("phantomReportPath","/Users/ubensti/pearson/phantomjs-1.9.7-macosx/bin/charts");
+	public static String phantomReportPath = Play.application().configuration().getString("phantomReportPath");
 	
 	public static String basefilepath = Play.application().path() + "/data/images/";
 	

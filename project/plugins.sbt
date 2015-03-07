@@ -8,3 +8,10 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.2")
 
 
+///////////////////////////
+// WARNING: only for making the war
+////////////////////////////
+//addSbtPlugin("play" % "sbt-plugin" % "2.1.3")
+
+//addSbtPlugin("com.github.play2war" % "play2-war-plugin" % "1.0")
+////////////////////////////

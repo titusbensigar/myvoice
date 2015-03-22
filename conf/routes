@@ -6,6 +6,7 @@
 GET     /                           controllers.Application.index()
 GET     /logout                           controllers.Application.logout()
 POST     /authenticate               controllers.Application.authenticate()
+POST     /registerme               controllers.Application.registerme()
 GET		/report						controllers.Application.report()
 GET		/dashboard/:id						controllers.Application.dashboard(id: Long)
 GET		/users						controllers.Application.users()

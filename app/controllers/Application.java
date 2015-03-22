@@ -248,6 +248,47 @@ public class Application extends Controller {
     	}
     }
     
+    public static Result registerme() {
+    	DynamicForm requestData = Form.form().bindFromRequest();
+    	String firstname = requestData.get("firstname");
+    	String lastname = requestData.get("lastname");
+        String email = requestData.get("email");
+        String password = requestData.get("password");
+        String repeatpassword = requestData.get("repeatpassword");
+        String checkboxes = requestData.get("checkboxes");
+        Logger.info("checkboxes : " + checkboxes);
+        if(!StringUtils.equalsIgnoreCase(password, repeatpassword)) {
+        	flash("error", "Invalid passwords.");
+    		return ok(login.render("MyVoice"));
+        }
+        if(checkboxes == null) {
+        	flash("error", "Please agree the terms and conditions.");
+    		return ok(login.render("MyVoice"));
+        }
+    	Logger.info("email : " + email + " ; password: " + password);
+    	User user = User.find.where().eq("email",email).findUnique();
+    	Logger.info("user : " + user);
+    	if (user == null ) {
+    		User newUser = new User();
+    		newUser.createdDate = new Date();
+    		newUser.email = email;
+    		newUser.password = requestData.get("password");
+    		newUser.firstName = requestData.get("firstName");
+    		newUser.lastName = requestData.get("lastName");
+    		newUser.isAdmin = false;
+    		newUser.save();
+    		
+			  flash("welcome","Welcome! Enjoy testing your Reading,Speaking,Listening and Typing Skills");
+			  session("connected", String.valueOf(newUser.id));
+			  Logger.info("user : " + newUser);
+			 return redirect(controllers.routes.Application.dashboard(newUser.id)); 
+//    		  return dashboard(user.getId());
+    	} else {
+    		flash("error", "Oops, Account already exists for this email.");
+    		return ok(login.render("MyVoice"));
+    	}
+    }
+    
     public static Result dashboard(Long id) {
 //    	User connecteduser = User.find.byId(new Long(session().get("connected")));
     	User user =User.find.byId(id);

@@ -9,11 +9,12 @@
    <title>@title</title>
 
     <!-- Core CSS - Include with every page -->
-    <link  href="@routes.Assets.at("stylesheets/bootstrap.min.css")" rel="stylesheet">
-    <link  href="@routes.Assets.at("stylesheets/font-awesome/css/font-awesome.css")" rel="stylesheet">
 
+    
+    <link  href="@routes.Assets.at("stylesheets/font-awesome/css/font-awesome.css")" rel="stylesheet">
+<link  href="@routes.Assets.at("stylesheets/style.css")" rel="stylesheet">
     <!-- SB Admin CSS - Include with every page -->
-    <link  href="@routes.Assets.at("stylesheets/sb-admin.css")" rel="stylesheet">
+    
 	<style type="text/css">
 		body
 		{
@@ -26,58 +27,149 @@
 	padding-top: 120px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
 	background: url("@routes.Assets.at("images/myvoice.png")") no-repeat center center;
 }
+
 	</style>
 </head>
 
 <body>
 <div class="myvoice"></div>
-<div class="container">
-        <div class="row">
-            <div class="col-md-4 col-md-offset-4">
-                <div class="login-panel panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Please Sign In</h3>
-                    </div>
-                    <div class="panel-body">
-                        <form role="form" method="post" action="/authenticate">
-                            <fieldset>
-                                <div class="form-group input-group">
-                                	<span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
+<section><div class="container"><div class="row">
+                    <div class="col-sm-6 col-md-6"><div class="signin">
+                            <p class="sign_title">Log in with your site account</p>
+                            <div class="row">
+                            <div class="col-lg-2"></div>
+                            <div class="form col-lg-8">
+                                 <form role="form" method="post" action="/authenticate">
+                                    <div class="form-group input-group">
+                                	<span class="input-group-addon"><i class="fa fa-envelope fa-fw"></i></span>
                                     <input class="form-control" placeholder="E-mail" id="email" name="email" type="email" autofocus>
                                 </div>
                                 <div class="form-group input-group">
                                 	<span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
                                     <input class="form-control" placeholder="Password" id="password" name="password" type="password" value="">
                                 </div>
-                                <div class="checkbox disabled">
-                                    <label>
-                                        <input name="remember"  disabled type="checkbox" value="Remember Me">Remember Me
-                                    </label>
-                                </div>
-                                <button type="submit" class="btn btn-lg btn-success btn-block">Login</button>
-                                <!-- Change this to a button or input when using this as a form -->
-                               <!--  <a href="/authenticate" class="btn btn-lg btn-success btn-block">Login</a> -->
-                            </fieldset>
-                        </form>
-                    </div>
-                </div>
+                                    <div class="forgot">
+                                         <div class="checkbox"><label class="">
+<input type="checkbox"> Remember me
+</label></div><a href="#">Forgot password?</a>
+                                    </div>
+                                   
+                                    <button type="submit" class="btn btn-lg btn-success btn-block">Sign In</button>
+                                </form>
+                            </div>
+                            <div class="col-lg-2"></div>
+                            </div>
+
                 @if(flash.get("error") != null) { 
             	<div class="alert alert-danger alert-dismissable">
             	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
             		@flash.get("error")
             	</div>
             	}
-            </div>
-            
-        </div>
-    </div>
+                        </div></div>
+                        
+                    <div class="col-sm-6 col-md-6"><div class="signup">
+
+<form role="form" method="post" action="/registerme">
+
+<div class="social_sign">
+<h3>Don't have a site account yet?</h3>
+                                 <a><i class="fa fa-user"></i></a>
+                            </div>
+<p class="sign_title">Create one now, it's fast &amp; free!</p>
+
+
+<div class="row">
+<div class="col-lg-2"></div>
+<div class="col-lg-8">
+	<table style="padding:0px;margin:0px;"><tr><td>
+	 							<div class="form-group input-group">
+                                	<span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>	
+                                    <input class="form-control " style="margin-left:-1px;border-bottom-right-radius:4px;border-top-right-radius:4px;" placeholder="First Name" id="firstname" name="firstname" type="name" autofocus>
+                                    
+                                </div>
+                                 </td><td>&nbsp;</td><td> 
+                                 	<div class="form-group input-group">
+                                 <input class="form-control" style="border-radius:4px;" placeholder="Last Name" id="lastname" name="lastname" type="name" autofocus>
+                                     </div>
+                                    </td></tr></table>
+    <div class="form-group input-group">
+                                	<span class="input-group-addon"><i class="fa fa-envelope fa-fw"></i></span>
+                                    <input class="form-control" placeholder="E-mail" id="email" name="email" type="email" autofocus>
+                                </div>
+                                <div class="form-group input-group">
+                                	<span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
+                                    <input class="form-control" placeholder="Password" id="password" name="password" type="password" value="">
+                                </div>
+                                <div class="form-group input-group">
+                                	<span class="input-group-addon"><i class="fa fa-retweet fa-fw"></i></span>
+                                    <input class="form-control" placeholder="Repeat Password" id="repeatpassword" name="repeatpassword" type="password" value="">
+                                </div>
+
+
+
+    <div class="checkbox"><label class="">
+      <input id="checkboxes" name="checkboxes" value="" type="checkbox"> I agree to the <a id="tandc" href="" role="button">terms and conditions</a>
+    </label></div>
+
+
+</div>
+<div class="col-lg-2"></div>
+</div>
+<button type="submit" class="btn btn-success btn-lg">Create your account</button>
+
+
+</form>
+
+                        </div></div>
+               </div></div>
+          </section>
+
+
         <!-- Core Scripts - Include with every page -->
     <script src="@routes.Assets.at("javascripts/jquery-1.10.2.js")"  type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/bootstrap.min.js")"  type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/plugins/metisMenu/jquery.metisMenu.js")"  type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/bootbox.js")"  type="text/javascript"></script>
+    
+<script type="text/javascript">
+$( document ).ready(function() {
+	$('#tandc').click(function(e){
+	        e.preventDefault();
+	        
+	        var str ='<div style="height:400px;overflow-y:auto;"><p>Welcome to our website. If you continue to browse and use this website, you are agreeing to comply with and be bound by the following terms and conditions of use, which together with our privacy policy govern TestingTeacherSkills.com’s relationship with you in relation to this website. If you disagree with any part of these terms and conditions, please do not use our website.' +
+'</p><p>The term ‘TestingTeacherSkills.com’ or ‘us’ or ‘we’ refers to the owner of the website. The term ‘you’ refers to the user or viewer of our website.</p>'+
+'<p>The use of this website is subject to the following terms of use:</p>'+
+'<p>'+
+'<ul><li>The content of the pages of this website is for your general information and use only. It is subject to change without notice.</li>'+
+'<li>This website uses cookies to monitor browsing preferences. If you do allow cookies to be used, the following personal information may be stored by us for use by third parties: [First Name, Last Name, Designation and Organization].</li>'+
+'<li>Neither we nor any third parties provide any warranty or guarantee as to the accuracy, timeliness, performance, completeness or suitability of the information and materials found or offered on this website for any particular purpose. You acknowledge that such information and materials may contain inaccuracies or errors and we expressly exclude liability for any such inaccuracies or errors to the fullest extent permitted by law.</li>'+
+'<li>Your use of any information or materials on this website is entirely at your own risk, for which we shall not be liable. It shall be your own responsibility to ensure that any products, services or information available through this website meet your specific requirements.</li>'+
+'<li>This website contains material which is owned by or licensed to us. This material includes, but is not limited to, the design, layout, look, appearance and graphics. Reproduction is prohibited other than in accordance with the copyright notice, which forms part of these terms and conditions.</li>'+
+'<li>All trademarks reproduced in this website, which are not the property of, or licensed to the operator, are acknowledged on the website.</li>'+
+'<li>Unauthorised use of this website may give rise to a claim for damages and/or be a criminal offence.</li>'+
+'<li>From time to time, this website may also include links to other websites. These links are provided for your convenience to provide further information. They do not signify that we endorse the website(s). We have no responsibility for the content of the linked website(s).</li>'+
+'<li>Your use of this website and any dispute arising out of such use of the website is subject to the laws of India.</li>'+
+'</p></div>	        ';
+	        
+	        bootbox.dialog({
+			  message: str,
+			  title: "Terms and Conditions",
+			  buttons: {
+			    success: {
+			      label: "Ok!",
+			      className: "btn-success",
+			      callback: function() {
+			       
+			      }
+			    }
+			  }
+			});
+	        
+	  });
+  });
+ </script>
 
-    <!-- SB Admin Scripts - Include with every page -->
-    <script src="@routes.Assets.at("javascripts/sb-admin.js")"  type="text/javascript"></script>
 
 </body>
 

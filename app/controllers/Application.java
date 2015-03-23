@@ -24,7 +24,9 @@ import models.User;
 import models.UserReport;
 import models.UserTopic;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.mail.HtmlEmail;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,15 +40,32 @@ import play.libs.Json;
 import play.libs.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
+import views.html.addtopic;
+import views.html.adduser;
+import views.html.assignuser;
+import views.html.dashboard;
+import views.html.editprofile;
+import views.html.edittopic;
+import views.html.edituser;
+import views.html.forgotpassword;
+import views.html.help;
+import views.html.login;
+import views.html.pdfreport;
+import views.html.printuserreport;
+import views.html.report;
+import views.html.topics;
+import views.html.userreports;
+import views.html.users;
+import views.html.viewuserreport;
 import vo.ChartVO;
-import views.html.*;
+
 import com.google.gson.Gson;
 public class Application extends Controller {
 	public static final String phantomJSUrl = Play.application().configuration().getString("phantomJSUrl","http://54.149.153.49:5555/");
 	public static final String appUrl = Play.application().configuration().getString("application.url","http://54.149.153.49:9000/");
 	public static String filePath = Play.application().configuration().getString("data.file.path");
 	public static String phantomReportPath = Play.application().configuration().getString("phantomReportPath","/home/ec2-user/opt/deployments/phantomjs-1.9.7-linux-x86_64/bin/charts");
-	
+	public static String randomCodeKey = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 	public static String basefilepath = Play.application().path() + "/data/images/";
 	
 	public static String filename = null;
@@ -59,6 +78,50 @@ public class Application extends Controller {
 	public static Result logout() {
 		session().remove("connected");
         return ok(login.render("MyVoice"));
+	}
+	
+	public static Result forgotpassword() {
+        return ok(forgotpassword.render("MyVoice"));
+	}
+	
+	public static Result submitpassword() {
+		DynamicForm requestData = Form.form().bindFromRequest();
+        String email = requestData.get("email");
+		User user = User.find.where().eq("email", email).findUnique();
+		Logger.info("user: " + user);
+    	if (user != null ) {
+    		try {
+	    		String str = RandomStringUtils.random(8,randomCodeKey);
+	    		Logger.info("str: " + str);
+	    		user.password = str;
+	    		user.save();
+	    		HtmlEmail emailObj = new HtmlEmail();
+	    		emailObj.setHostName(Play.application().configuration().getString("mail.smtp.host"));
+	    		emailObj.setAuthentication(Play.application().configuration().getString("mail.smtp.user"), Play.application().configuration().getString("mail.smtp.pass"));
+	    		emailObj.setSSL(true);
+	    		emailObj.setSmtpPort(Play.application().configuration().getInt("mail.smtp.port"));
+	    		emailObj.addTo(email);
+	    		emailObj.setFrom(Play.application().configuration().getString("mail.smtp.user"), "TestingTeacherSkills");
+	    		emailObj.setSubject("MyVoice - Reset Password");
+	    		// embed the image and get the content id
+	    		StringBuffer msg = new StringBuffer();
+		    	msg.append("<html>Hello ").append(user.firstName).append(", <br/><br/>This is an automated email, please don't reply.<br/><hr style='border: 1px dotted #999; border-style: none none dotted; color: #fff; background-color: #fff;' /><br/><br/> ")
+		    			.append("<br/>Someone entered your email on the 'Forgot Password' screen at MyVoice.");
+		    	msg.append("<br/> ").append("<br/><hr style='border: 1px dotted #ff0000; border-style: none none dotted; color: #fff; background-color: #fff;' /><br/>Temporary Password: " )
+		    			.append(str).append( "<br/><hr style='border: 1px dotted #ff0000; border-style: none none dotted; color: #fff; background-color: #fff;' /><br/>").append("<br/><br/>If this wasn't you, there is no need to take any action.<br/><br/>").append("Regards,<br/> MyVoice Team</html>");
+	    		// set the html message
+		    	emailObj.setHtmlMsg(msg.toString());
+	    		// set the alternative message
+		    	emailObj.setTextMsg("Your email client does not support HTML messages, too bad :(");
+		    	emailObj.send();
+		    	Logger.info("email: " + msg.toString());
+		    	
+    		}catch(Exception e) {
+    			e.printStackTrace();
+    		}
+    	}
+    	flash("success","Reset password is delivered successfully, please check your email to login.");
+    	return ok(login.render("MyVoice"));
 	}
 	
 	public static Result users() {

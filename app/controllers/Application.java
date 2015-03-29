@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import play.Logger;
 import play.Play;
+import play.api.libs.Codecs;
 import play.data.DynamicForm;
 import play.data.Form;
 import play.libs.F.Function;
@@ -60,7 +61,6 @@ import views.html.viewuserreport;
 import vo.ChartVO;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 public class Application extends Controller {
 	public static final String phantomJSUrl = Play.application().configuration().getString("phantomJSUrl","http://54.149.153.49:5555/");
 	public static final String appUrl = Play.application().configuration().getString("application.url","http://54.149.153.49:9000/");
@@ -95,6 +95,8 @@ public class Application extends Controller {
 	    		String str = RandomStringUtils.random(8,randomCodeKey);
 	    		Logger.info("str: " + str);
 	    		user.password = str;
+	    		user.passwordEncrypted = null;
+	    		user.salt = null;
 	    		user.save();
 	    		HtmlEmail emailObj = new HtmlEmail();
 	    		emailObj.setHostName(Play.application().configuration().getString("mail.smtp.host"));
@@ -168,10 +170,11 @@ public class Application extends Controller {
     			flash("error", "Oops, Firstname and Lastname are required.");
         		return ok(login.render("MyVoice"));
     		}
+    		String pass = requestData.get("password");
     		User newUser = new User();
     		newUser.createdDate = new Date();
     		newUser.email = email;
-    		newUser.password = requestData.get("password");
+    		newUser.password = Codecs.md5(pass.getBytes());
     		newUser.firstName = requestData.get("firstName");
     		newUser.lastName = requestData.get("lastName");
     		newUser.schoolName = requestData.get("schoolName");
@@ -311,7 +314,7 @@ public class Application extends Controller {
     	Logger.info("email : " + email + " ; password: " + password);
     	User user = User.find.where().eq("email",email).findUnique();
     	Logger.info("user : " + user);
-    	if (user != null && user.email.equalsIgnoreCase(email) && user.password.equalsIgnoreCase(password) ) {
+    	if (user != null && user.email.equalsIgnoreCase(email) && user.checkPassword(password) ) {
     		  flash("welcome","Welcome! Enjoy testing your Reading,Speaking,Listening and Typing Skills");
     		  session("connected", String.valueOf(user.id));
     		  Logger.info("user : " + user);
@@ -325,11 +328,11 @@ public class Application extends Controller {
     
     public static Result registerme() {
     	DynamicForm requestData = Form.form().bindFromRequest();
-    	String firstname = requestData.get("firstname");
-    	String lastname = requestData.get("lastname");
-        String email = requestData.get("email");
-        String password = requestData.get("password");
-        String repeatpassword = requestData.get("repeatpassword");
+    	String firstname = requestData.get("rfirstname");
+    	String lastname = requestData.get("rlastname");
+        String email = requestData.get("remail");
+        String password = requestData.get("rpassword");
+        String repeatpassword = requestData.get("rrepeatpassword");
         String checkboxes = requestData.get("checkboxes");
         Logger.info("checkboxes : " + checkboxes);
         if(!StringUtils.equalsIgnoreCase(password, repeatpassword)) {
@@ -344,7 +347,7 @@ public class Application extends Controller {
 			flash("error", "Oops, Email is required.");
     		return ok(login.render("MyVoice"));
 		}
-    	Logger.info("email : " + email + " ; password: " + password);
+//    	Logger.info("email : " + email + " ; password: " + password);
     	User user = User.find.where().eq("email",email).findUnique();
     	Logger.info("user : " + user);
     	if (user == null ) {
@@ -353,11 +356,17 @@ public class Application extends Controller {
         		return ok(login.render("MyVoice"));
     		}
     		User newUser = new User();
+    		try {
+				newUser.setNewPassword(password);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     		newUser.createdDate = new Date();
     		newUser.email = email;
-    		newUser.password = requestData.get("password");
-    		newUser.firstName = requestData.get("firstName");
-    		newUser.lastName = requestData.get("lastName");
+//    		newUser.password = Codecs.md5(password.getBytes());
+    		newUser.firstName = firstname;
+    		newUser.lastName = lastname;
     		newUser.isAdmin = false;
     		newUser.save();
     		

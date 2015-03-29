@@ -35,6 +35,10 @@ GET		/deletetopic/:id/:checkrelation						controllers.Application.deletetopic(id
 GET		/edittopic/:id					controllers.Application.edittopic(id: Long)
 POST	/updatetopic					controllers.Application.updatetopic
 
+GET		/assigntopic						controllers.Application.assigntopic()
+POST		/updateusertopic/:topicId						controllers.Application.updateusertopic(topicId : Long)
+
+
 POST	/mapusertopic/user/:userId/topic/:topicId	controllers.Application.mapusertopic(userId : Long, topicId : Long)
 
 GET		/usertopics.json/:userId			controllers.Application.usertopics_DT_DP(userId : Long)

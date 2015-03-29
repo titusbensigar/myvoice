@@ -58,6 +58,7 @@ import views.html.topics;
 import views.html.userreports;
 import views.html.users;
 import views.html.viewuserreport;
+import views.html.assigntopic;
 import vo.ChartVO;
 
 import com.google.gson.Gson;
@@ -172,6 +173,10 @@ public class Application extends Controller {
     		}
     		String pass = requestData.get("password");
     		User newUser = new User();
+    		List<Topic> topics = Topic.find.all();
+    		if (topics != null && topics.size() > 0) {
+    			newUser.defaultTopic = topics.get(0);
+    		}
     		newUser.createdDate = new Date();
     		newUser.email = email;
     		newUser.password = Codecs.md5(pass.getBytes());
@@ -237,6 +242,24 @@ public class Application extends Controller {
     		}
     	}
     	return users();
+	}
+	
+	public static Result updateusertopic(Long topicId) {
+		User connecteduser = User.find.byId(new Long(session().get("connected")));
+    	Logger.info("topicId : " + topicId );
+    	Map<String, String> msg = new HashMap<String,String>();
+    	if (topicId != null && connecteduser != null) {
+			Topic topic = Topic.find.byId(topicId);
+			connecteduser.defaultTopic = topic;
+			connecteduser.save();
+    		msg.put("status", "success");
+			msg.put("msg", "Topic assigned to User successfully.");
+        	return ok(Json.toJson(msg));
+		} else {
+			msg.put("status", "failed");
+			msg.put("msg", "Oops, Please select topic and try again.");
+        	return ok(Json.toJson(msg));
+		}
 	}
 	
 	public static Result updateuser() {
@@ -311,7 +334,7 @@ public class Application extends Controller {
     	DynamicForm requestData = Form.form().bindFromRequest();
         String email = requestData.get("email");
         String password = requestData.get("password");
-    	Logger.info("email : " + email + " ; password: " + password);
+//    	Logger.info("email : " + email + " ; password: " + password);
     	User user = User.find.where().eq("email",email).findUnique();
     	Logger.info("user : " + user);
     	if (user != null && user.email.equalsIgnoreCase(email) && user.checkPassword(password) ) {
@@ -362,6 +385,12 @@ public class Application extends Controller {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+    		
+    		List<Topic> topics = Topic.find.all();
+    		if (topics != null && topics.size() > 0) {
+    			newUser.defaultTopic = topics.get(0);
+    		}
+    		
     		newUser.createdDate = new Date();
     		newUser.email = email;
 //    		newUser.password = Codecs.md5(password.getBytes());
@@ -397,6 +426,11 @@ public class Application extends Controller {
     public static Result topics() {
     	User connecteduser = User.find.byId(new Long(session().get("connected")));
         return ok(topics.render(connecteduser));
+    }
+    
+    public static Result assigntopic() {
+    	User connecteduser = User.find.byId(new Long(session().get("connected")));
+        return ok(assigntopic.render(connecteduser));
     }
     
     public static Result userreports() {

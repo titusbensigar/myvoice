@@ -60,6 +60,7 @@ import views.html.viewuserreport;
 import vo.ChartVO;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 public class Application extends Controller {
 	public static final String phantomJSUrl = Play.application().configuration().getString("phantomJSUrl","http://54.149.153.49:5555/");
 	public static final String appUrl = Play.application().configuration().getString("application.url","http://54.149.153.49:9000/");
@@ -133,6 +134,7 @@ public class Application extends Controller {
 		JSONObject obj = new JSONObject();
 		List<User> lsUser = User.find.all();
 		try {
+//			Logger.info("USers===> " +lsUser);
 			obj.put("aaData", lsUser);
 			obj.put("sEcho", 1);
 			obj.put("iTotalRecords", lsUser.size());
@@ -154,8 +156,18 @@ public class Application extends Controller {
 		DynamicForm requestData = Form.form().bindFromRequest();
         String email = requestData.get("email");
     	Logger.info("email : " + email );
+    	if(StringUtils.isBlank(email)) {
+			flash("error", "Oops, Email is required.");
+    		return users();
+		}
     	User user = User.find.where().eq("email", email).findUnique();
     	if (user == null ) {
+    		String firstname = requestData.get("firstName");
+    		String lastname = requestData.get("lastName");
+    		if (StringUtils.isBlank(firstname) || StringUtils.isBlank(lastname)) {
+    			flash("error", "Oops, Firstname and Lastname are required.");
+        		return ok(login.render("MyVoice"));
+    		}
     		User newUser = new User();
     		newUser.createdDate = new Date();
     		newUser.email = email;
@@ -328,10 +340,18 @@ public class Application extends Controller {
         	flash("error", "Please agree the terms and conditions.");
     		return ok(login.render("MyVoice"));
         }
+        if(StringUtils.isBlank(email)) {
+			flash("error", "Oops, Email is required.");
+    		return ok(login.render("MyVoice"));
+		}
     	Logger.info("email : " + email + " ; password: " + password);
     	User user = User.find.where().eq("email",email).findUnique();
     	Logger.info("user : " + user);
     	if (user == null ) {
+    		if (StringUtils.isBlank(firstname) || StringUtils.isBlank(lastname)) {
+    			flash("error", "Oops, Firstname and Lastname are required.");
+        		return ok(login.render("MyVoice"));
+    		}
     		User newUser = new User();
     		newUser.createdDate = new Date();
     		newUser.email = email;
